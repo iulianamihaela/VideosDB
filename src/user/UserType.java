@@ -1,4 +1,4 @@
-package common;
+package user;
 
 public enum UserType {
     STANDARD,
