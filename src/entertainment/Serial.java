@@ -1,33 +1,31 @@
 package entertainment;
 
-import fileio.MovieInputData;
+import fileio.SerialInputData;
 import utils.Utils;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
-public class Movie extends Video {
-  private double rating;
-  private int duration;
+public class Serial extends Video {
+  private ArrayList<Season> seasons;
 
-  public Movie(
+  public Serial(
       final String title,
       final int releaseYear,
       final ArrayList<Genre> genres,
       final ArrayList<String> cast,
-      final int duration) {
+      final ArrayList<Season> seasons) {
     super(title, releaseYear, genres, cast);
 
-    this.duration = duration;
-    rating = 0;
+    this.seasons = new ArrayList<>(seasons);
   }
 
-  public Movie(final MovieInputData movieInput) {
+  public Serial(final SerialInputData serialInput) {
     this(
-        movieInput.getTitle(),
-        movieInput.getYear(),
+        serialInput.getTitle(),
+        serialInput.getYear(),
         new ArrayList<Genre>(
-            movieInput
+            serialInput
                 // Obtinem lista de genuri (ca string)
                 .getGenres()
                 // Pentru fiecare gen facem conversia la enum
@@ -35,7 +33,7 @@ public class Movie extends Video {
                 .map(g -> Utils.stringToGenre(g))
                 // Convertim in lista
                 .collect(Collectors.toList())),
-        movieInput.getCast(),
-        movieInput.getDuration());
+        serialInput.getCast(),
+        serialInput.getSeasons());
   }
 }

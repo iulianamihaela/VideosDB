@@ -1,6 +1,6 @@
 package user;
 
 public enum UserType {
-    STANDARD,
+    BASIC,
     PREMIUM
 }

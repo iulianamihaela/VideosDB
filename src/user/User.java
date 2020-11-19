@@ -1,19 +1,39 @@
 package user;
 
-import entertainment.Video;
+import fileio.UserInputData;
+import utils.Utils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class User {
-    private UserType userType;
+  private String username;
+  private UserType userType;
 
-    private ArrayList<Video> favoriteVideos;
-    private ArrayList<Video> viewedVideos;
+  private HashMap<String, Integer> history;
+  private ArrayList<String> favoriteVideos;
+  private ArrayList<String> viewedVideos;
 
-    public User(UserType userType) {
-        this.userType = userType;
+  public User(
+      final String username,
+      final UserType userType,
+      final ArrayList<String> favoriteVideos,
+      final Map<String, Integer> history) {
+    this.username = username;
+    this.userType = userType;
 
-        favoriteVideos = new ArrayList<>();
-        viewedVideos = new ArrayList<>();
-    }
+    this.favoriteVideos = new ArrayList<String>(favoriteVideos);
+    this.history = new HashMap<String, Integer>(history);
+
+    viewedVideos = new ArrayList<>();
+  }
+
+  public User(final UserInputData userInput) {
+    this(
+        userInput.getUsername(),
+        Utils.stringToUserType(userInput.getSubscriptionType()),
+        userInput.getFavoriteMovies(),
+        userInput.getHistory());
+  }
 }

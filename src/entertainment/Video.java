@@ -3,33 +3,34 @@ package entertainment;
 import java.util.ArrayList;
 
 public abstract class Video {
-    private String title;
-    private int releaseYear;
-    private ArrayList<Genre> genres;
+  private String title;
+  private int releaseYear;
+  private ArrayList<Genre> genres;
+  private ArrayList<String> cast;
 
-    public Video(String title, int releaseYear) {
-        this.title = title;
-        this.releaseYear = releaseYear;
-    }
+  public Video(
+      final String title,
+      final int releaseYear,
+      final ArrayList<Genre> genres,
+      final ArrayList<String> cast) {
+    this.title = title;
+    this.releaseYear = releaseYear;
+    this.genres = new ArrayList<>(genres);
+    this.cast = new ArrayList<>(cast);
+  }
 
-    public Video(String title, int releaseYear, ArrayList<Genre> genres) {
-        this(title, releaseYear);
-        this.genres = new ArrayList<>(genres);
-    }
+  /** Video's title */
+  public String getTitle() {
+    return title;
+  }
 
-    public String getTitle() {
-        return title;
-    }
+  /** The year the video was release */
+  public int getReleaseYear() {
+    return releaseYear;
+  }
 
-    public int getReleaseYear() {
-        return releaseYear;
-    }
-
-    public ArrayList<Genre> getGenres() {
-        return genres;
-    }
-
-    public void addGenre(Genre genre) {
-        genres.add(genre);
-    }
+  /** Video's genres list */
+  public ArrayList<Genre> getGenres() {
+    return genres;
+  }
 }

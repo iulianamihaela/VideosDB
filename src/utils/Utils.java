@@ -5,6 +5,7 @@ import common.Constants;
 import entertainment.Genre;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import user.UserType;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -49,6 +50,19 @@ public final class Utils {
             case "kids" -> Genre.KIDS;
             case "western" -> Genre.WESTERN;
             case "tv movie" -> Genre.TV_MOVIE;
+            default -> null;
+        };
+    }
+
+    /**
+     * Transforms a string into an enum
+     * @param userType of user
+     * @return an UserType Enum
+     */
+    public static UserType stringToUserType(final String userType) {
+        return switch (userType.toLowerCase()) {
+            case "basic" -> UserType.BASIC;
+            case "premium" -> UserType.PREMIUM;
             default -> null;
         };
     }
