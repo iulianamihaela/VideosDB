@@ -66,7 +66,7 @@ public final class Main {
     JSONArray arrayResult = new JSONArray();
 
     VideosDB videosDB = new VideosDB();
-    videosDB.readDB(input);
+    arrayResult = videosDB.run(input, fileWriter);
 
     fileWriter.closeJSON(arrayResult);
   }
