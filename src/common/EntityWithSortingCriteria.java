@@ -17,14 +17,13 @@ public class EntityWithSortingCriteria implements Comparable {
     @Override
     public int compareTo(final Object o) {
         if (o instanceof EntityWithSortingCriteria) {
-            int diff = (int) (this.sortingCriteria
-                    - ((EntityWithSortingCriteria) o).sortingCriteria);
-
-            if (diff == 0) {
+            if (Double.compare(this.sortingCriteria,
+                    ((EntityWithSortingCriteria) o).sortingCriteria) == 0) {
                 return this.name.compareTo(((EntityWithSortingCriteria) o).name);
             }
 
-            return diff;
+            return Double.compare(this.sortingCriteria,
+                    ((EntityWithSortingCriteria) o).sortingCriteria);
         }
         return 0;
     }

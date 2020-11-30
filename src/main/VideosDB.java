@@ -484,7 +484,7 @@ public class VideosDB {
 
         for (String name : ratingForUser.keySet()) {
             actorsWithRating.add(new EntityWithSortingCriteria(name,
-                    ratingForUser.get(name) / noRatingsForUser.get(name)));
+                    ratingForUser.get(name) / (double) noRatingsForUser.get(name)));
         }
 
         if (actionInput.getSortType().equals(Constants.ASC_SORTING)) {
@@ -1267,7 +1267,7 @@ public class VideosDB {
             }
         }
 
-        if (!result.equals(null)) {
+        if (!result.isEmpty()) {
             try {
                 return writer.writeFile(actionInput.getActionId(),
                         "message",
