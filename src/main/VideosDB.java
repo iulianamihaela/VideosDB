@@ -1,14 +1,15 @@
 package main;
 
 import actor.Actor;
-import common.ActorWithSortingCriteria;
 import common.Constants;
 import common.UserWithSortingCriteria;
 import common.VideoWithSortingCriteria;
-import entertainment.Genre;
+import common.VideoWithTwoSortingCriterias;
+import common.ActorWithSortingCriteria;
 import entertainment.Movie;
-import entertainment.Serial;
+import entertainment.Genre;
 import entertainment.Season;
+import entertainment.Serial;
 import fileio.ActionInputData;
 import fileio.ActorInputData;
 import fileio.Writer;
@@ -35,11 +36,15 @@ public class VideosDB {
     private final HashMap<String, Actor> actors;
     private final HashMap<String, User> users;
 
+    private final List<String> videosOrder;
+
     public VideosDB() {
         movies = new HashMap<>();
         serials = new HashMap<>();
         users = new HashMap<>();
         actors = new HashMap<>();
+
+        videosOrder = new ArrayList<>();
     }
 
     /**
@@ -82,6 +87,7 @@ public class VideosDB {
      */
     private void readMovies(final List<MovieInputData> movieInputDataList) {
         for (MovieInputData movieInput : movieInputDataList) {
+            videosOrder.add(movieInput.getTitle());
             movies.put(movieInput.getTitle(), new Movie(movieInput));
         }
     }
@@ -93,6 +99,7 @@ public class VideosDB {
      */
     private void readSerials(final List<SerialInputData> serialInputDataList) {
         for (SerialInputData serialInput : serialInputDataList) {
+            videosOrder.add(serialInput.getTitle());
             serials.put(serialInput.getTitle(), new Serial(serialInput));
         }
     }
@@ -204,22 +211,24 @@ public class VideosDB {
     private JSONObject executeFavoriteCommand(final ActionInputData actionInput,
                                               final Writer output) {
         int actionId = actionInput.getActionId();
-        String movieTitle = actionInput.getTitle();
+        String title = actionInput.getTitle();
         String username = actionInput.getUsername();
 
-        boolean movieExists = movies.get(movieTitle) != null;
+        boolean titleExists = movies.containsKey(title) || serials.containsKey(title);
 
-        if (!movieExists) {
+        if (!titleExists) {
             return new JSONObject();
         }
 
         boolean hasBeenFavorited = false;
-        boolean wasAlreadyFavorited = users.get(username).hasFavoriteMovie(movieTitle);
-        boolean hasBeenViewedByUser = movies.get(movieTitle).hasBeenViewedByUser(username);
+        boolean wasAlreadyFavorited = users.get(username).hasFavoriteMovie(title);
+        boolean hasBeenViewedByUser =
+                (movies.containsKey(title) && movies.get(title).hasBeenViewedByUser(username))
+                || (serials.containsKey(title) && serials.get(title).hasBeenViewedByUser(username));
 
-        if (movieExists && (hasBeenViewedByUser || wasAlreadyFavorited)) {
+        if (titleExists && (hasBeenViewedByUser || wasAlreadyFavorited)) {
             if (!wasAlreadyFavorited) {
-                users.get(username).addFavorite(movieTitle);
+                users.get(username).addFavorite(title);
             }
             hasBeenFavorited = true;
         }
@@ -231,18 +240,18 @@ public class VideosDB {
                             actionId,
                             "message",
                             "error -> "
-                                    + movieTitle
+                                    + title
                                     + " is already in favourite list");
                 } else {
                     return output.writeFile(
                             actionId,
                             "message",
                             "success -> "
-                                    + movieTitle
+                                    + title
                                     + " was added as favourite");
                 }
             } else {
-                return output.writeFile(actionId, "message", "error -> " + movieTitle
+                return output.writeFile(actionId, "message", "error -> " + title
                         + " is not seen");
             }
         } catch (IOException e) {
@@ -1238,6 +1247,7 @@ public class VideosDB {
 
         return switch (type) {
             case Constants.STANDARD -> executeStandardRecommendation(actionInput, writer);
+            case Constants.BEST_UNSEEN -> executeBestUnseenRecommendation(actionInput, writer);
 
             default -> new JSONObject();
         };
@@ -1279,6 +1289,49 @@ public class VideosDB {
             return writer.writeFile(actionInput.getActionId(),
                     "message",
                     "StandardRecommendation cannot be applied!");
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            return new JSONObject();
+        }
+    }
+
+    private JSONObject executeBestUnseenRecommendation(final ActionInputData actionInput,
+                                                       final Writer writer) {
+        List<VideoWithTwoSortingCriterias> results = new ArrayList<>();
+
+        for (String name : videosOrder) {
+            if (movies.containsKey(name)
+                    && !movies.get(name).hasBeenViewedByUser(actionInput.getUsername())) {
+                results.add(new VideoWithTwoSortingCriterias(name,
+                        movies.get(name).getRating(), (double) results.size()));
+            }
+
+            if (serials.containsKey(name)
+                    && !serials.get(name).hasBeenViewedByUser(actionInput.getUsername())) {
+                results.add(new VideoWithTwoSortingCriterias(name,
+                        serials.get(name).getRating(), (double) results.size()));
+            }
+        }
+
+        Collections.sort(results);
+
+        if (results.size() <= 0) {
+            try {
+                return writer.writeFile(actionInput.getActionId(),
+                        "message",
+                        "BestRatedUnseenRecommendation cannot be applied!");
+            } catch (IOException e) {
+                e.printStackTrace();
+
+                return new JSONObject();
+            }
+        }
+
+        try {
+            return writer.writeFile(actionInput.getActionId(),
+                    "message",
+                    "BestRatedUnseenRecommendation result: " + results.get(0));
         } catch (IOException e) {
             e.printStackTrace();
 
