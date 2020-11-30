@@ -148,7 +148,7 @@ public class VideosDB {
 
         return switch (type) {
             case Constants.VIEW_COMMAND -> executeViewCommand(actionInput, writer);
-            case Constants.FAVORITE_COMMAND -> executeFavoriteCommand(actionInput, writer);
+            case Constants.FAVORITE -> executeFavoriteCommand(actionInput, writer);
             case Constants.RATING_COMMAND -> executeRatingCommand(actionInput, writer);
             default -> new JSONObject();
         };
@@ -383,6 +383,8 @@ public class VideosDB {
         return switch (actionInput.getCriteria()) {
             case Constants.RATINGS_CRITERIA -> executeMoviesRatingCriteria(actionInput,
                     writer);
+            case Constants.FAVORITE -> executeMoviesFavoriteCriteria(actionInput,
+                    writer);
             default -> new JSONObject();
         };
     }
@@ -398,6 +400,8 @@ public class VideosDB {
                                             final Writer writer) {
         return switch (actionInput.getCriteria()) {
             case Constants.RATINGS_CRITERIA -> executeShowsRatingCriteria(actionInput,
+                    writer);
+            case Constants.FAVORITE -> executeShowsFavoriteCriteria(actionInput,
                     writer);
             default -> new JSONObject();
         };
@@ -686,6 +690,160 @@ public class VideosDB {
             }
 
             showsResult.add(new VideoWithSortingCriteria(serial.getTitle(), serial.getRating()));
+        }
+
+        if (actionInput.getSortType() == Constants.ASC_SORTING) {
+            Collections.sort(showsResult);
+        }
+        if (actionInput.getSortType() == Constants.DESC_SORTING) {
+            Collections.sort(showsResult, Collections.reverseOrder());
+        }
+
+        try {
+            return writer.writeFile(actionInput.getActionId(),
+                    "message",
+                    "Query result: "
+                            + showsResult
+                            .stream()
+                            .limit(actionInput.getNumber())
+                            .collect(Collectors.toList())
+            );
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            return new JSONObject();
+        }
+    }
+
+    private JSONObject executeMoviesFavoriteCriteria(final ActionInputData actionInput,
+                                                   final Writer writer) {
+        List<VideoWithSortingCriteria> moviesResult = new ArrayList<>();
+
+        boolean hasYearFilter = true;
+        boolean hasGenreFilter = true;
+
+        int releaseYear = 0;
+        Genre genre = null;
+
+        try {
+            releaseYear = Integer.parseInt(
+                    actionInput
+                            .getFilters()
+                            .get(Constants.YEAR_FILTER_POSITION)
+                            .get(0)
+            );
+        } catch (Exception e) {
+            hasYearFilter = false;
+        }
+
+        try {
+            genre = Utils.stringToGenre(
+                    actionInput
+                            .getFilters()
+                            .get(Constants.GENRE_FILTER_POSITION)
+                            .get(0)
+            );
+        } catch (Exception e) {
+            hasGenreFilter = false;
+        }
+
+        for (Movie movie : movies.values()) {
+            if (hasYearFilter && movie.getReleaseYear() != releaseYear) {
+                continue;
+            }
+            if (hasGenreFilter && !movie.getGenres().contains(genre)) {
+                continue;
+            }
+
+            int occurences = 0;
+
+            for (User user : users.values()) {
+                if (user.hasFavoriteMovie(movie.getTitle())) {
+                    occurences++;
+                }
+            }
+
+            if (occurences > 0) {
+                moviesResult.add(new VideoWithSortingCriteria(movie.getTitle(),
+                        (double) occurences));
+            }
+        }
+
+        if (actionInput.getSortType() == Constants.ASC_SORTING) {
+            Collections.sort(moviesResult);
+        }
+        if (actionInput.getSortType() == Constants.DESC_SORTING) {
+            Collections.sort(moviesResult, Collections.reverseOrder());
+        }
+
+        try {
+            return writer.writeFile(actionInput.getActionId(),
+                    "message",
+                    "Query result: "
+                            + moviesResult
+                            .stream()
+                            .limit(actionInput.getNumber())
+                            .collect(Collectors.toList())
+            );
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            return new JSONObject();
+        }
+    }
+
+    private JSONObject executeShowsFavoriteCriteria(final ActionInputData actionInput,
+                                                     final Writer writer) {
+        List<VideoWithSortingCriteria> showsResult = new ArrayList<>();
+
+        boolean hasYearFilter = true;
+        boolean hasGenreFilter = true;
+
+        int releaseYear = 0;
+        Genre genre = null;
+
+        try {
+            releaseYear = Integer.parseInt(
+                    actionInput
+                            .getFilters()
+                            .get(Constants.YEAR_FILTER_POSITION)
+                            .get(0)
+            );
+        } catch (Exception e) {
+            hasYearFilter = false;
+        }
+
+        try {
+            genre = Utils.stringToGenre(
+                    actionInput
+                            .getFilters()
+                            .get(Constants.GENRE_FILTER_POSITION)
+                            .get(0)
+            );
+        } catch (Exception e) {
+            hasGenreFilter = false;
+        }
+
+        for (Serial serial : serials.values()) {
+            if (hasYearFilter && serial.getReleaseYear() != releaseYear) {
+                continue;
+            }
+            if (hasGenreFilter && !serial.getGenres().contains(genre)) {
+                continue;
+            }
+
+            int occurences = 0;
+
+            for (User user : users.values()) {
+                if (user.hasFavoriteMovie(serial.getTitle())) {
+                    occurences++;
+                }
+            }
+
+            if (occurences > 0) {
+                showsResult.add(new VideoWithSortingCriteria(serial.getTitle(),
+                        (double) occurences));
+            }
         }
 
         if (actionInput.getSortType() == Constants.ASC_SORTING) {
