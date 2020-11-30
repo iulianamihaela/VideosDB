@@ -482,7 +482,12 @@ public class VideosDB {
                     ratingForUser.get(name) / noRatingsForUser.get(name)));
         }
 
-        Collections.sort(actorsWithRating);
+        if (actionInput.getSortType().equals(Constants.ASC_SORTING)) {
+            Collections.sort(actorsWithRating);
+        }
+        if (actionInput.getSortType().equals(Constants.DESC_SORTING)) {
+            Collections.sort(actorsWithRating, Collections.reverseOrder());
+        }
 
         try {
             return writer.writeFile(actionInput.getActionId(),
@@ -529,10 +534,10 @@ public class VideosDB {
             }
         }
 
-        if (actionInput.getSortType() == Constants.ASC_SORTING) {
+        if (actionInput.getSortType().equals(Constants.ASC_SORTING)) {
             Collections.sort(actorsResult);
         }
-        if (actionInput.getSortType() == Constants.DESC_SORTING) {
+        if (actionInput.getSortType().equals(Constants.DESC_SORTING)) {
             Collections.sort(actorsResult, Collections.reverseOrder());
         }
 
@@ -580,10 +585,10 @@ public class VideosDB {
             }
         }
 
-        if (actionInput.getSortType() == Constants.ASC_SORTING) {
+        if (actionInput.getSortType().equals(Constants.ASC_SORTING)) {
             Collections.sort(actorsResult);
         }
-        if (actionInput.getSortType() == Constants.DESC_SORTING) {
+        if (actionInput.getSortType().equals(Constants.DESC_SORTING)) {
             Collections.sort(actorsResult, Collections.reverseOrder());
         }
 
@@ -649,10 +654,10 @@ public class VideosDB {
             moviesResult.add(new VideoWithSortingCriteria(movie.getTitle(), movie.getRating()));
         }
 
-        if (actionInput.getSortType() == Constants.ASC_SORTING) {
+        if (actionInput.getSortType().equals(Constants.ASC_SORTING)) {
             Collections.sort(moviesResult);
         }
-        if (actionInput.getSortType() == Constants.DESC_SORTING) {
+        if (actionInput.getSortType().equals(Constants.DESC_SORTING)) {
             Collections.sort(moviesResult, Collections.reverseOrder());
         }
 
@@ -718,10 +723,10 @@ public class VideosDB {
             showsResult.add(new VideoWithSortingCriteria(serial.getTitle(), serial.getRating()));
         }
 
-        if (actionInput.getSortType() == Constants.ASC_SORTING) {
+        if (actionInput.getSortType().equals(Constants.ASC_SORTING)) {
             Collections.sort(showsResult);
         }
-        if (actionInput.getSortType() == Constants.DESC_SORTING) {
+        if (actionInput.getSortType().equals(Constants.DESC_SORTING)) {
             Collections.sort(showsResult, Collections.reverseOrder());
         }
 
@@ -795,10 +800,10 @@ public class VideosDB {
             }
         }
 
-        if (actionInput.getSortType() == Constants.ASC_SORTING) {
+        if (actionInput.getSortType().equals(Constants.ASC_SORTING)) {
             Collections.sort(moviesResult);
         }
-        if (actionInput.getSortType() == Constants.DESC_SORTING) {
+        if (actionInput.getSortType().equals(Constants.DESC_SORTING)) {
             Collections.sort(moviesResult, Collections.reverseOrder());
         }
 
@@ -872,10 +877,10 @@ public class VideosDB {
             }
         }
 
-        if (actionInput.getSortType() == Constants.ASC_SORTING) {
+        if (actionInput.getSortType().equals(Constants.ASC_SORTING)) {
             Collections.sort(showsResult);
         }
-        if (actionInput.getSortType() == Constants.DESC_SORTING) {
+        if (actionInput.getSortType().equals(Constants.DESC_SORTING)) {
             Collections.sort(showsResult, Collections.reverseOrder());
         }
 
@@ -939,10 +944,10 @@ public class VideosDB {
                     (double) movie.getDuration()));
         }
 
-        if (actionInput.getSortType() == Constants.ASC_SORTING) {
+        if (actionInput.getSortType().equals(Constants.ASC_SORTING)) {
             Collections.sort(moviesResult);
         }
-        if (actionInput.getSortType() == Constants.DESC_SORTING) {
+        if (actionInput.getSortType().equals(Constants.DESC_SORTING)) {
             Collections.sort(moviesResult, Collections.reverseOrder());
         }
 
@@ -1006,10 +1011,10 @@ public class VideosDB {
                     (double) serial.getDuration()));
         }
 
-        if (actionInput.getSortType() == Constants.ASC_SORTING) {
+        if (actionInput.getSortType().equals(Constants.ASC_SORTING)) {
             Collections.sort(showsResult);
         }
-        if (actionInput.getSortType() == Constants.DESC_SORTING) {
+        if (actionInput.getSortType().equals(Constants.DESC_SORTING)) {
             Collections.sort(showsResult, Collections.reverseOrder());
         }
 
