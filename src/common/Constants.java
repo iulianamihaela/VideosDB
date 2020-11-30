@@ -82,5 +82,6 @@ public final class Constants {
   public static final String ASC_SORTING = "asc";
   public static final String DESC_SORTING = "desc";
 
+  public static final int WORDS_FILTER_POSITION = 2;
   public static final int AWARDS_FILTER_POSITION = 3;
 }

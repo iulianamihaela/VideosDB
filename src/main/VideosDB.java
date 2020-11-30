@@ -325,7 +325,7 @@ public class VideosDB {
     return switch (actionInput.getCriteria()) {
       case Constants.AVERAGE -> executeActorsAverageQuery(actionInput, writer);
       case Constants.AWARDS -> executeActorsAwardsCriteria(actionInput, writer);
-      case Constants.FILTER_DESCRIPTIONS -> new JSONObject();
+      case Constants.FILTER_DESCRIPTIONS -> executeActorsFilterDescription(actionInput, writer);
       default -> new JSONObject();
     };
   }
@@ -419,6 +419,56 @@ public class VideosDB {
       if (hasAwards) {
         actorsResult.add(new ActorWithSortingCriteria(actor.getName(),
                 (double) (actor.getAwardsCount())));
+      }
+    }
+
+    if (actionInput.getSortType() == Constants.ASC_SORTING) {
+      Collections.sort(actorsResult);
+    }
+    if (actionInput.getSortType() == Constants.DESC_SORTING) {
+      Collections.sort(actorsResult, Collections.reverseOrder());
+    }
+
+    try {
+      return writer.writeFile(actionInput.getActionId(),
+              "message",
+              "Query result: "
+                      + actorsResult
+                              .stream()
+                              .limit(actionInput.getNumber())
+                              .collect(Collectors.toList())
+      );
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    return new JSONObject();
+  }
+
+  /**
+   * Executes an Actors Filter Description Query
+   * @param actionInput action input data
+   * @param writer output writer
+   * @return result
+   */
+  public JSONObject executeActorsFilterDescription(final ActionInputData actionInput,
+                                                   final Writer writer) {
+    List<String> keywords = actionInput.getFilters().get(Constants.WORDS_FILTER_POSITION);
+
+    List<ActorWithSortingCriteria> actorsResult = new ArrayList<>();
+
+    for (Actor actor : actors.values()) {
+      boolean containsKeywords = true;
+
+      for (String keyword : keywords) {
+        if (!actor.getCareerDescription().contains(keyword)) {
+          containsKeywords = false;
+          break;
+        }
+      }
+
+      if (containsKeywords) {
+        actorsResult.add(new ActorWithSortingCriteria(actor.getName(), (double) 0));
       }
     }
 

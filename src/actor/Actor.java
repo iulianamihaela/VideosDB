@@ -48,10 +48,18 @@ public class Actor {
   }
 
   /**
-   * Retrieve's actor's name
+   * Retrieves actor's name
    * @return actor's name
    */
   public String getName() {
     return name;
+  }
+
+  /**
+   * Retrieves actor's carrer description
+   * @return actor's carrer description
+   */
+  public String getCareerDescription() {
+    return careerDescription;
   }
 }
