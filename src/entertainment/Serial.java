@@ -38,6 +38,15 @@ public class Serial extends Video {
     }
 
     /**
+     * Returns the seasons list
+     *
+     * @return season
+     */
+    public ArrayList<Season> getSeasons() {
+        return seasons;
+    }
+
+    /**
      * Returns the season with the given number
      *
      * @param seasonNumber season's number

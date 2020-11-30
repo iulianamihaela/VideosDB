@@ -79,6 +79,7 @@ public final class Constants {
   public static final String FAVORITE = "favorite";
   public static final String AVERAGE = "average";
   public static final String LONGEST = "longest";
+  public static final String MOST_VIEWED = "most_viewed";
 
   public static final String RATINGS_CRITERIA = "ratings";
 

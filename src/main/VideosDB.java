@@ -3,10 +3,12 @@ package main;
 import actor.Actor;
 import common.ActorWithSortingCriteria;
 import common.Constants;
+import common.UserWithSortingCriteria;
 import common.VideoWithSortingCriteria;
 import entertainment.Genre;
 import entertainment.Movie;
 import entertainment.Serial;
+import entertainment.Season;
 import fileio.ActionInputData;
 import fileio.ActorInputData;
 import fileio.Writer;
@@ -349,6 +351,7 @@ public class VideosDB {
             case Constants.ACTORS -> executeActorsCriteria(actionInput, writer);
             case Constants.MOVIES -> executeMoviesCriteria(actionInput, writer);
             case Constants.SHOWS -> executeShowsCriteria(actionInput, writer);
+            case Constants.USERS -> executeUsersCriteria(actionInput, writer);
             default -> new JSONObject();
         };
     }
@@ -387,6 +390,8 @@ public class VideosDB {
                     writer);
             case Constants.LONGEST -> executeMoviesLongestCriteria(actionInput,
                     writer);
+            case Constants.MOST_VIEWED -> executeMoviesMostViewedCriteria(actionInput,
+                    writer);
             default -> new JSONObject();
         };
     }
@@ -407,6 +412,23 @@ public class VideosDB {
                     writer);
             case Constants.LONGEST -> executeShowsLongestCriteria(actionInput,
                     writer);
+            case Constants.MOST_VIEWED -> executeShowsMostViewedCriteria(actionInput,
+                    writer);
+            default -> new JSONObject();
+        };
+    }
+
+    /**
+     * Process a criteria users execution
+     *
+     * @param actionInput action input
+     * @param writer      output writer
+     * @return result
+     */
+    private JSONObject executeUsersCriteria(final ActionInputData actionInput,
+                                             final Writer writer) {
+        return switch (actionInput.getCriteria()) {
+            case Constants.NUM_RATINGS -> executeNumRatingsUsersQuery(actionInput, writer);
             default -> new JSONObject();
         };
     }
@@ -996,6 +1018,200 @@ public class VideosDB {
                     "message",
                     "Query result: "
                             + showsResult
+                            .stream()
+                            .limit(actionInput.getNumber())
+                            .collect(Collectors.toList())
+            );
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            return new JSONObject();
+        }
+    }
+
+    private JSONObject executeMoviesMostViewedCriteria(final ActionInputData actionInput,
+                                                    final Writer writer) {
+        List<VideoWithSortingCriteria> moviesResult = new ArrayList<>();
+
+        boolean hasYearFilter = true;
+        boolean hasGenreFilter = true;
+
+        int releaseYear = 0;
+        Genre genre = null;
+
+        try {
+            releaseYear = Integer.parseInt(
+                    actionInput
+                            .getFilters()
+                            .get(Constants.YEAR_FILTER_POSITION)
+                            .get(0)
+            );
+        } catch (Exception e) {
+            hasYearFilter = false;
+        }
+
+        try {
+            genre = Utils.stringToGenre(
+                    actionInput
+                            .getFilters()
+                            .get(Constants.GENRE_FILTER_POSITION)
+                            .get(0)
+            );
+        } catch (Exception e) {
+            hasGenreFilter = false;
+        }
+
+        for (Movie movie : movies.values()) {
+            if (hasYearFilter && movie.getReleaseYear() != releaseYear) {
+                continue;
+            }
+            if (hasGenreFilter && !movie.getGenres().contains(genre)) {
+                continue;
+            }
+            if (movie.getViewsCount() <= 0) {
+                continue;
+            }
+
+            moviesResult.add(new VideoWithSortingCriteria(movie.getTitle(),
+                    (double) movie.getViewsCount()));
+        }
+
+        if (actionInput.getSortType().equals(Constants.ASC_SORTING)) {
+            Collections.sort(moviesResult);
+        }
+        if (actionInput.getSortType().equals(Constants.DESC_SORTING)) {
+            Collections.sort(moviesResult, Collections.reverseOrder());
+        }
+
+        try {
+            return writer.writeFile(actionInput.getActionId(),
+                    "message",
+                    "Query result: "
+                            + moviesResult
+                            .stream()
+                            .limit(actionInput.getNumber())
+                            .collect(Collectors.toList())
+            );
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            return new JSONObject();
+        }
+    }
+
+    private JSONObject executeShowsMostViewedCriteria(final ActionInputData actionInput,
+                                                       final Writer writer) {
+        List<VideoWithSortingCriteria> showsResult = new ArrayList<>();
+
+        boolean hasYearFilter = true;
+        boolean hasGenreFilter = true;
+
+        int releaseYear = 0;
+        Genre genre = null;
+
+        try {
+            releaseYear = Integer.parseInt(
+                    actionInput
+                            .getFilters()
+                            .get(Constants.YEAR_FILTER_POSITION)
+                            .get(0)
+            );
+        } catch (Exception e) {
+            hasYearFilter = false;
+        }
+
+        try {
+            genre = Utils.stringToGenre(
+                    actionInput
+                            .getFilters()
+                            .get(Constants.GENRE_FILTER_POSITION)
+                            .get(0)
+            );
+        } catch (Exception e) {
+            hasGenreFilter = false;
+        }
+
+        for (Serial serial : serials.values()) {
+            if (hasYearFilter && serial.getReleaseYear() != releaseYear) {
+                continue;
+            }
+            if (hasGenreFilter && !serial.getGenres().contains(genre)) {
+                continue;
+            }
+            if (serial.getViewsCount() <= 0) {
+                continue;
+            }
+
+            showsResult.add(new VideoWithSortingCriteria(serial.getTitle(),
+                    (double) serial.getViewsCount()));
+        }
+
+        if (actionInput.getSortType().equals(Constants.ASC_SORTING)) {
+            Collections.sort(showsResult);
+        }
+        if (actionInput.getSortType().equals(Constants.DESC_SORTING)) {
+            Collections.sort(showsResult, Collections.reverseOrder());
+        }
+
+        try {
+            return writer.writeFile(actionInput.getActionId(),
+                    "message",
+                    "Query result: "
+                            + showsResult
+                            .stream()
+                            .limit(actionInput.getNumber())
+                            .collect(Collectors.toList())
+            );
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            return new JSONObject();
+        }
+    }
+
+    private JSONObject executeNumRatingsUsersQuery(final ActionInputData actionInput,
+                                                   final Writer writer) {
+        HashMap<String, Integer> usersWithTotalRatings = new HashMap<>();
+        List<UserWithSortingCriteria> usersResult = new ArrayList<>();
+
+        for (Movie movie : movies.values()) {
+            for (String user : movie.getRatingsForUsers().keySet()) {
+                if (usersWithTotalRatings.containsKey(user)) {
+                    usersWithTotalRatings.put(user, usersWithTotalRatings.get(user) + 1);
+                } else {
+                    usersWithTotalRatings.put(user, 1);
+                }
+            }
+        }
+
+        for (Serial serial : serials.values()) {
+            for (Season season : serial.getSeasons()) {
+                for (String user : season.getRatingsForUsers().keySet()) {
+                    if (usersWithTotalRatings.containsKey(user)) {
+                        usersWithTotalRatings.put(user, usersWithTotalRatings.get(user) + 1);
+                    } else {
+                        usersWithTotalRatings.put(user, 1);
+                    }
+                }
+            }
+        }
+
+        for (Map.Entry<String, Integer> pair : usersWithTotalRatings.entrySet()) {
+            usersResult.add(new UserWithSortingCriteria(pair.getKey(), (double) pair.getValue()));
+        }
+
+        if (actionInput.getSortType().equals(Constants.ASC_SORTING)) {
+            Collections.sort(usersResult);
+        }
+        if (actionInput.getSortType().equals(Constants.DESC_SORTING)) {
+            Collections.sort(usersResult, Collections.reverseOrder());
+        }
+
+        try {
+            return writer.writeFile(actionInput.getActionId(),
+                    "message",
+                    "Query result: "
+                            + usersResult
                             .stream()
                             .limit(actionInput.getNumber())
                             .collect(Collectors.toList())

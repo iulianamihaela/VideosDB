@@ -53,6 +53,15 @@ public final class Season {
   }
 
   /**
+   * Gets the ratings for each users as HashMap
+   *
+   * @return ratings
+   */
+  public HashMap<String, Double> getRatingsForUsers() {
+    return ratingsByUser;
+  }
+
+  /**
    * Retrieve the season's rating
    * @return season's rating
    */
