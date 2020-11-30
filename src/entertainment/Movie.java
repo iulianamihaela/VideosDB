@@ -75,4 +75,12 @@ public class Movie extends Video {
     return ratingsFromUsers.values().stream().mapToDouble(Double::doubleValue).sum()
             / ratingsFromUsers.values().size();
   }
+
+  /**
+   * Gets the movie's duration
+   * @return movie's duration
+   */
+  public int getDuration() {
+    return duration;
+  }
 }
