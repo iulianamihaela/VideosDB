@@ -136,7 +136,7 @@ public class VideosDB {
         return switch (actionInput.getActionType()) {
             case Constants.COMMAND -> executeCommand(actionInput, writer);
             case Constants.QUERY -> executeQuery(actionInput, writer);
-            case Constants.RECOMMENDATION -> new JSONObject();
+            case Constants.RECOMMENDATION -> executeRecommendation(actionInput, writer);
             default -> new JSONObject();
         };
     }
@@ -426,7 +426,7 @@ public class VideosDB {
      * @return result
      */
     private JSONObject executeUsersCriteria(final ActionInputData actionInput,
-                                             final Writer writer) {
+                                            final Writer writer) {
         return switch (actionInput.getCriteria()) {
             case Constants.NUM_RATINGS -> executeNumRatingsUsersQuery(actionInput, writer);
             default -> new JSONObject();
@@ -1035,7 +1035,7 @@ public class VideosDB {
     }
 
     private JSONObject executeMoviesMostViewedCriteria(final ActionInputData actionInput,
-                                                    final Writer writer) {
+                                                       final Writer writer) {
         List<VideoWithSortingCriteria> moviesResult = new ArrayList<>();
 
         boolean hasYearFilter = true;
@@ -1105,7 +1105,7 @@ public class VideosDB {
     }
 
     private JSONObject executeShowsMostViewedCriteria(final ActionInputData actionInput,
-                                                       final Writer writer) {
+                                                      final Writer writer) {
         List<VideoWithSortingCriteria> showsResult = new ArrayList<>();
 
         boolean hasYearFilter = true;
@@ -1221,6 +1221,64 @@ public class VideosDB {
                             .limit(actionInput.getNumber())
                             .collect(Collectors.toList())
             );
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            return new JSONObject();
+        }
+    }
+
+    private JSONObject executeRecommendation(final ActionInputData actionInput,
+                                             final Writer writer) {
+        final String type = actionInput.getType();
+
+        if (type == null) {
+            return new JSONObject();
+        }
+
+        return switch (type) {
+            case Constants.STANDARD -> executeStandardRecommendation(actionInput, writer);
+
+            default -> new JSONObject();
+        };
+    }
+
+    private JSONObject executeStandardRecommendation(final ActionInputData actionInput,
+                                                     final Writer writer) {
+        String result = "";
+
+        for (Movie movie : movies.values()) {
+            if (!movie.hasBeenViewedByUser(actionInput.getUsername())) {
+                result = movie.getTitle();
+            }
+        }
+
+        if (result.isEmpty()) {
+            for (Serial serial : serials.values()) {
+                if (!serial.hasBeenViewedByUser(actionInput.getUsername())) {
+                    result = serial.getTitle();
+                }
+            }
+        }
+
+        if (!result.equals(null)) {
+            try {
+                return writer.writeFile(actionInput.getActionId(),
+                        "message",
+                        "StandardRecommendation result: "
+                                + result
+                );
+            } catch (IOException e) {
+                e.printStackTrace();
+
+                return new JSONObject();
+            }
+        }
+
+        try {
+            return writer.writeFile(actionInput.getActionId(),
+                    "message",
+                    "StandardRecommendation cannot be applied!");
         } catch (IOException e) {
             e.printStackTrace();
 
