@@ -1,13 +1,13 @@
 package common;
 
-public class VideoWithTwoSortingCriterias implements Comparable {
+public class EntityWithTwoSortingCriterias implements Comparable {
     private String name;
     private Double firstSortingCriteria;
     private Double secondSortingCriteria;
 
-    public VideoWithTwoSortingCriterias(final String givenName,
-                                        final Double givenSortingCriteria,
-                                        final Double givenSecondSortingCriteria) {
+    public EntityWithTwoSortingCriterias(final String givenName,
+                                         final Double givenSortingCriteria,
+                                         final Double givenSecondSortingCriteria) {
         name = givenName;
         firstSortingCriteria = givenSortingCriteria;
         secondSortingCriteria = givenSecondSortingCriteria;
@@ -20,13 +20,13 @@ public class VideoWithTwoSortingCriterias implements Comparable {
      */
     @Override
     public int compareTo(final Object o) {
-        if (o instanceof VideoWithTwoSortingCriterias) {
+        if (o instanceof EntityWithTwoSortingCriterias) {
             int firstDiff = (int) (this.firstSortingCriteria
-                    - ((VideoWithTwoSortingCriterias) o).firstSortingCriteria);
+                    - ((EntityWithTwoSortingCriterias) o).firstSortingCriteria);
 
             if (firstDiff == 0) {
                 return (int) (this.secondSortingCriteria
-                        - ((VideoWithTwoSortingCriterias) o).secondSortingCriteria);
+                        - ((EntityWithTwoSortingCriterias) o).secondSortingCriteria);
             }
 
             return firstDiff;

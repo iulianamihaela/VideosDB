@@ -2,10 +2,8 @@ package main;
 
 import actor.Actor;
 import common.Constants;
-import common.UserWithSortingCriteria;
-import common.VideoWithSortingCriteria;
-import common.VideoWithTwoSortingCriterias;
-import common.ActorWithSortingCriteria;
+import common.EntityWithSortingCriteria;
+import common.EntityWithTwoSortingCriterias;
 import entertainment.Movie;
 import entertainment.Genre;
 import entertainment.Season;
@@ -462,7 +460,7 @@ public class VideosDB {
         HashMap<String, Double> ratingForUser = new HashMap<>();
         HashMap<String, Integer> noRatingsForUser = new HashMap<>();
 
-        ArrayList<ActorWithSortingCriteria> actorsWithRating = new ArrayList<>();
+        ArrayList<EntityWithSortingCriteria> actorsWithRating = new ArrayList<>();
 
         for (Movie movie : movies.values()) {
             for (String actorName : movie.getCast()) {
@@ -495,7 +493,7 @@ public class VideosDB {
         }
 
         for (String name : ratingForUser.keySet()) {
-            actorsWithRating.add(new ActorWithSortingCriteria(name,
+            actorsWithRating.add(new EntityWithSortingCriteria(name,
                     ratingForUser.get(name) / noRatingsForUser.get(name)));
         }
 
@@ -533,7 +531,7 @@ public class VideosDB {
                                                   final Writer writer) {
         List<String> awardsList = actionInput.getFilters().get(Constants.AWARDS_FILTER_POSITION);
 
-        List<ActorWithSortingCriteria> actorsResult = new ArrayList<>();
+        List<EntityWithSortingCriteria> actorsResult = new ArrayList<>();
 
         for (Actor actor : actors.values()) {
             boolean hasAwards = true;
@@ -546,7 +544,7 @@ public class VideosDB {
             }
 
             if (hasAwards) {
-                actorsResult.add(new ActorWithSortingCriteria(actor.getName(),
+                actorsResult.add(new EntityWithSortingCriteria(actor.getName(),
                         (double) (actor.getAwardsCount())));
             }
         }
@@ -585,7 +583,7 @@ public class VideosDB {
                                                      final Writer writer) {
         List<String> keywords = actionInput.getFilters().get(Constants.WORDS_FILTER_POSITION);
 
-        List<ActorWithSortingCriteria> actorsResult = new ArrayList<>();
+        List<EntityWithSortingCriteria> actorsResult = new ArrayList<>();
 
         for (Actor actor : actors.values()) {
             boolean containsKeywords = true;
@@ -598,7 +596,7 @@ public class VideosDB {
             }
 
             if (containsKeywords) {
-                actorsResult.add(new ActorWithSortingCriteria(actor.getName(), (double) 0));
+                actorsResult.add(new EntityWithSortingCriteria(actor.getName(), (double) 0));
             }
         }
 
@@ -627,7 +625,7 @@ public class VideosDB {
 
     private JSONObject executeMoviesRatingCriteria(final ActionInputData actionInput,
                                                    final Writer writer) {
-        List<VideoWithSortingCriteria> moviesResult = new ArrayList<>();
+        List<EntityWithSortingCriteria> moviesResult = new ArrayList<>();
 
         boolean hasYearFilter = true;
         boolean hasGenreFilter = true;
@@ -668,7 +666,7 @@ public class VideosDB {
                 continue;
             }
 
-            moviesResult.add(new VideoWithSortingCriteria(movie.getTitle(), movie.getRating()));
+            moviesResult.add(new EntityWithSortingCriteria(movie.getTitle(), movie.getRating()));
         }
 
         if (actionInput.getSortType().equals(Constants.ASC_SORTING)) {
@@ -696,7 +694,7 @@ public class VideosDB {
 
     private JSONObject executeShowsRatingCriteria(final ActionInputData actionInput,
                                                   final Writer writer) {
-        List<VideoWithSortingCriteria> showsResult = new ArrayList<>();
+        List<EntityWithSortingCriteria> showsResult = new ArrayList<>();
 
         boolean hasYearFilter = true;
         boolean hasGenreFilter = true;
@@ -737,7 +735,7 @@ public class VideosDB {
                 continue;
             }
 
-            showsResult.add(new VideoWithSortingCriteria(serial.getTitle(), serial.getRating()));
+            showsResult.add(new EntityWithSortingCriteria(serial.getTitle(), serial.getRating()));
         }
 
         if (actionInput.getSortType().equals(Constants.ASC_SORTING)) {
@@ -765,7 +763,7 @@ public class VideosDB {
 
     private JSONObject executeMoviesFavoriteCriteria(final ActionInputData actionInput,
                                                      final Writer writer) {
-        List<VideoWithSortingCriteria> moviesResult = new ArrayList<>();
+        List<EntityWithSortingCriteria> moviesResult = new ArrayList<>();
 
         boolean hasYearFilter = true;
         boolean hasGenreFilter = true;
@@ -812,7 +810,7 @@ public class VideosDB {
             }
 
             if (occurences > 0) {
-                moviesResult.add(new VideoWithSortingCriteria(movie.getTitle(),
+                moviesResult.add(new EntityWithSortingCriteria(movie.getTitle(),
                         (double) occurences));
             }
         }
@@ -842,7 +840,7 @@ public class VideosDB {
 
     private JSONObject executeShowsFavoriteCriteria(final ActionInputData actionInput,
                                                     final Writer writer) {
-        List<VideoWithSortingCriteria> showsResult = new ArrayList<>();
+        List<EntityWithSortingCriteria> showsResult = new ArrayList<>();
 
         boolean hasYearFilter = true;
         boolean hasGenreFilter = true;
@@ -889,7 +887,7 @@ public class VideosDB {
             }
 
             if (occurences > 0) {
-                showsResult.add(new VideoWithSortingCriteria(serial.getTitle(),
+                showsResult.add(new EntityWithSortingCriteria(serial.getTitle(),
                         (double) occurences));
             }
         }
@@ -919,7 +917,7 @@ public class VideosDB {
 
     private JSONObject executeMoviesLongestCriteria(final ActionInputData actionInput,
                                                     final Writer writer) {
-        List<VideoWithSortingCriteria> moviesResult = new ArrayList<>();
+        List<EntityWithSortingCriteria> moviesResult = new ArrayList<>();
 
         boolean hasYearFilter = true;
         boolean hasGenreFilter = true;
@@ -957,7 +955,7 @@ public class VideosDB {
                 continue;
             }
 
-            moviesResult.add(new VideoWithSortingCriteria(movie.getTitle(),
+            moviesResult.add(new EntityWithSortingCriteria(movie.getTitle(),
                     (double) movie.getDuration()));
         }
 
@@ -986,7 +984,7 @@ public class VideosDB {
 
     private JSONObject executeShowsLongestCriteria(final ActionInputData actionInput,
                                                    final Writer writer) {
-        List<VideoWithSortingCriteria> showsResult = new ArrayList<>();
+        List<EntityWithSortingCriteria> showsResult = new ArrayList<>();
 
         boolean hasYearFilter = true;
         boolean hasGenreFilter = true;
@@ -1024,7 +1022,7 @@ public class VideosDB {
                 continue;
             }
 
-            showsResult.add(new VideoWithSortingCriteria(serial.getTitle(),
+            showsResult.add(new EntityWithSortingCriteria(serial.getTitle(),
                     (double) serial.getDuration()));
         }
 
@@ -1053,7 +1051,7 @@ public class VideosDB {
 
     private JSONObject executeMoviesMostViewedCriteria(final ActionInputData actionInput,
                                                        final Writer writer) {
-        List<VideoWithSortingCriteria> moviesResult = new ArrayList<>();
+        List<EntityWithSortingCriteria> moviesResult = new ArrayList<>();
 
         boolean hasYearFilter = true;
         boolean hasGenreFilter = true;
@@ -1094,7 +1092,7 @@ public class VideosDB {
                 continue;
             }
 
-            moviesResult.add(new VideoWithSortingCriteria(movie.getTitle(),
+            moviesResult.add(new EntityWithSortingCriteria(movie.getTitle(),
                     (double) movie.getViewsCount()));
         }
 
@@ -1123,7 +1121,7 @@ public class VideosDB {
 
     private JSONObject executeShowsMostViewedCriteria(final ActionInputData actionInput,
                                                       final Writer writer) {
-        List<VideoWithSortingCriteria> showsResult = new ArrayList<>();
+        List<EntityWithSortingCriteria> showsResult = new ArrayList<>();
 
         boolean hasYearFilter = true;
         boolean hasGenreFilter = true;
@@ -1164,7 +1162,7 @@ public class VideosDB {
                 continue;
             }
 
-            showsResult.add(new VideoWithSortingCriteria(serial.getTitle(),
+            showsResult.add(new EntityWithSortingCriteria(serial.getTitle(),
                     (double) serial.getViewsCount()));
         }
 
@@ -1194,7 +1192,7 @@ public class VideosDB {
     private JSONObject executeNumRatingsUsersQuery(final ActionInputData actionInput,
                                                    final Writer writer) {
         HashMap<String, Integer> usersWithTotalRatings = new HashMap<>();
-        List<UserWithSortingCriteria> usersResult = new ArrayList<>();
+        List<EntityWithSortingCriteria> usersResult = new ArrayList<>();
 
         for (Movie movie : movies.values()) {
             for (String user : movie.getRatingsForUsers().keySet()) {
@@ -1219,7 +1217,7 @@ public class VideosDB {
         }
 
         for (Map.Entry<String, Integer> pair : usersWithTotalRatings.entrySet()) {
-            usersResult.add(new UserWithSortingCriteria(pair.getKey(), (double) pair.getValue()));
+            usersResult.add(new EntityWithSortingCriteria(pair.getKey(), (double) pair.getValue()));
         }
 
         if (actionInput.getSortType().equals(Constants.ASC_SORTING)) {
@@ -1306,18 +1304,18 @@ public class VideosDB {
 
     private JSONObject executeBestUnseenRecommendation(final ActionInputData actionInput,
                                                        final Writer writer) {
-        List<VideoWithTwoSortingCriterias> results = new ArrayList<>();
+        List<EntityWithTwoSortingCriterias> results = new ArrayList<>();
 
         for (String name : videosOrder) {
             if (movies.containsKey(name)
                     && !movies.get(name).hasBeenViewedByUser(actionInput.getUsername())) {
-                results.add(new VideoWithTwoSortingCriterias(name,
+                results.add(new EntityWithTwoSortingCriterias(name,
                         movies.get(name).getRating(), (double) results.size()));
             }
 
             if (serials.containsKey(name)
                     && !serials.get(name).hasBeenViewedByUser(actionInput.getUsername())) {
-                results.add(new VideoWithTwoSortingCriterias(name,
+                results.add(new EntityWithTwoSortingCriterias(name,
                         serials.get(name).getRating(), (double) results.size()));
             }
         }

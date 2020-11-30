@@ -1,10 +1,10 @@
 package common;
 
-public class UserWithSortingCriteria implements Comparable {
+public class EntityWithSortingCriteria implements Comparable {
     private String name;
     private Double sortingCriteria;
 
-    public UserWithSortingCriteria(final String name, final Double rating) {
+    public EntityWithSortingCriteria(final String name, final Double rating) {
         this.name = name;
         this.sortingCriteria = rating;
     }
@@ -16,12 +16,12 @@ public class UserWithSortingCriteria implements Comparable {
      */
     @Override
     public int compareTo(final Object o) {
-        if (o instanceof UserWithSortingCriteria) {
+        if (o instanceof EntityWithSortingCriteria) {
             int diff = (int) (this.sortingCriteria
-                    - ((UserWithSortingCriteria) o).sortingCriteria);
+                    - ((EntityWithSortingCriteria) o).sortingCriteria);
 
             if (diff == 0) {
-                return this.name.compareTo(((UserWithSortingCriteria) o).name);
+                return this.name.compareTo(((EntityWithSortingCriteria) o).name);
             }
 
             return diff;
