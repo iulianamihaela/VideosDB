@@ -173,25 +173,33 @@ public class VideosDB {
      */
     private JSONObject executeViewCommand(final ActionInputData actionInput, final Writer output) {
         int actionId = actionInput.getActionId();
-        String movieTitle = actionInput.getTitle();
+        String title = actionInput.getTitle();
+        String user = actionInput.getUsername();
 
-        boolean movieExists = movies.get(movieTitle) != null;
+        boolean titleExists = movies.containsKey(title) || serials.containsKey(title);
+        int views = 0;
 
-        if (movieExists) {
-            movies.get(movieTitle).addViewer(actionInput.getUsername());
+        if (titleExists) {
+            if (movies.containsKey(title)) {
+                movies.get(title).addViewer(user);
+                views = movies.get(title).getUsersViews(user);
+            } else if (serials.containsKey(title)) {
+                serials.get(title).addViewer(user);
+                views = serials.get(title).getUsersViews(user);
+            }
         }
 
         try {
-            if (movieExists) {
+            if (titleExists) {
                 return output.writeFile(
                         actionId,
                         "message",
                         "success -> "
-                                + movieTitle
+                                + title
                                 + " was viewed with total views of "
-                                + movies.get(movieTitle).getViewsCount());
+                                + views);
             } else {
-                return output.writeFile(actionId, "message", "error -> " + movieTitle
+                return output.writeFile(actionId, "message", "error -> " + title
                         + " is not seen");
             }
         } catch (IOException e) {
