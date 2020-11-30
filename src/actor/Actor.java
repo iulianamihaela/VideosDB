@@ -30,4 +30,28 @@ public class Actor {
         actorInput.getAwards(),
         actorInput.getFilmography());
   }
+
+  /**
+   * Retrieves actor's awards <Award, Count>
+   * @return awards map
+   */
+  public HashMap<ActorsAwards, Integer> getAwards() {
+    return awards;
+  }
+
+  /**
+   * Retrieves the number of actor's awards
+   * @return number of awards
+   */
+  public Integer getAwardsCount() {
+    return awards.values().stream().mapToInt(Integer::intValue).sum();
+  }
+
+  /**
+   * Retrieve's actor's name
+   * @return actor's name
+   */
+  public String getName() {
+    return name;
+  }
 }

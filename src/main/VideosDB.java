@@ -1,5 +1,6 @@
 package main;
 
+import actor.Actor;
 import common.ActorWithSortingCriteria;
 import common.Constants;
 import entertainment.Movie;
@@ -9,6 +10,7 @@ import fileio.UserInputData;
 import fileio.SerialInputData;
 import fileio.MovieInputData;
 import fileio.ActionInputData;
+import fileio.ActorInputData;
 import fileio.Writer;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -25,12 +27,14 @@ import java.util.stream.Collectors;
 public class VideosDB {
   private final HashMap<String, Movie> movies;
   private final HashMap<String, Serial> serials;
+  private final HashMap<String, Actor> actors;
   private final HashMap<String, User> users;
 
   public VideosDB() {
     movies = new HashMap<>();
     serials = new HashMap<>();
     users = new HashMap<>();
+    actors = new HashMap<>();
   }
 
   /**
@@ -84,6 +88,16 @@ public class VideosDB {
   private void readSerials(final List<SerialInputData> serialInputDataList) {
     for (SerialInputData serialInput : serialInputDataList) {
       serials.put(serialInput.getTitle(), new Serial(serialInput));
+    }
+  }
+
+  /**
+   * Reads actors from list
+   * @param actorInputDataList list of input data for actors
+   */
+  private void readActors(final List<ActorInputData> actorInputDataList) {
+    for (ActorInputData actorInput : actorInputDataList) {
+      actors.put(actorInput.getName(), new Actor(actorInput));
     }
   }
 
@@ -310,7 +324,7 @@ public class VideosDB {
   private JSONObject executeActorsCriteria(final ActionInputData actionInput, final Writer writer) {
     return switch (actionInput.getCriteria()) {
       case Constants.AVERAGE -> executeActorsAverageQuery(actionInput, writer);
-      case Constants.AWARDS -> new JSONObject();
+      case Constants.AWARDS -> executeActorsAwardsCriteria(actionInput, writer);
       case Constants.FILTER_DESCRIPTIONS -> new JSONObject();
       default -> new JSONObject();
     };
@@ -369,6 +383,57 @@ public class VideosDB {
               "message",
               "Query result: "
                       + actorsWithRating
+                              .stream()
+                              .limit(actionInput.getNumber())
+                              .collect(Collectors.toList())
+      );
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    return new JSONObject();
+  }
+
+  /**
+   * Executes an Actors Awards query
+   * @param actionInput action input data
+   * @param writer output writer
+   * @return result
+   */
+  public JSONObject executeActorsAwardsCriteria(final ActionInputData actionInput,
+                                                final Writer writer) {
+    List<String> awardsList = actionInput.getFilters().get(Constants.AWARDS_FILTER_POSITION);
+
+    List<ActorWithSortingCriteria> actorsResult = new ArrayList<>();
+
+    for (Actor actor : actors.values()) {
+      boolean hasAwards = true;
+
+      for (String award : awardsList) {
+        if (!actor.getAwards().containsKey(award)) {
+          hasAwards = false;
+          break;
+        }
+      }
+
+      if (hasAwards) {
+        actorsResult.add(new ActorWithSortingCriteria(actor.getName(),
+                (double) (actor.getAwardsCount())));
+      }
+    }
+
+    if (actionInput.getSortType() == Constants.ASC_SORTING) {
+      Collections.sort(actorsResult);
+    }
+    if (actionInput.getSortType() == Constants.DESC_SORTING) {
+      Collections.sort(actorsResult, Collections.reverseOrder());
+    }
+
+    try {
+      return writer.writeFile(actionInput.getActionId(),
+              "message",
+              "Query result: "
+                      + actorsResult
                               .stream()
                               .limit(actionInput.getNumber())
                               .collect(Collectors.toList())
