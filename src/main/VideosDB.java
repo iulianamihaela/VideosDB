@@ -4,28 +4,18 @@ import actor.Actor;
 import common.Constants;
 import common.EntityWithSortingCriteria;
 import common.EntityWithTwoSortingCriterias;
-import entertainment.Movie;
 import entertainment.Genre;
+import entertainment.Movie;
 import entertainment.Season;
 import entertainment.Serial;
-import fileio.ActionInputData;
-import fileio.ActorInputData;
-import fileio.Writer;
-import fileio.MovieInputData;
-import fileio.SerialInputData;
-import fileio.UserInputData;
-import fileio.Input;
+import fileio.*;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import user.User;
 import utils.Utils;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Collections;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class VideosDB {
@@ -1254,6 +1244,7 @@ public class VideosDB {
         return switch (type) {
             case Constants.STANDARD -> executeStandardRecommendation(actionInput, writer);
             case Constants.BEST_UNSEEN -> executeBestUnseenRecommendation(actionInput, writer);
+            case Constants.POPULAR -> executePopularRecommendation(actionInput, writer);
 
             default -> new JSONObject();
         };
@@ -1343,5 +1334,82 @@ public class VideosDB {
 
             return new JSONObject();
         }
+    }
+
+    private JSONObject executePopularRecommendation(final ActionInputData actionInput,
+                                                    final Writer writer) {
+        HashMap<Genre, Integer> genresOccurences = new HashMap<>();
+        List<EntityWithSortingCriteria> genresPopularity = new ArrayList<>();
+
+        for (Movie movie : movies.values()) {
+            for (Genre genre : movie.getGenres()) {
+                if (genresOccurences.containsKey(genre)) {
+                    genresOccurences.put(genre, genresOccurences.get(genre) + 1);
+                } else {
+                    genresOccurences.put(genre, 1);
+                }
+            }
+        }
+
+        for (Serial serial : serials.values()) {
+            for (Genre genre : serial.getGenres()) {
+                if (genresOccurences.containsKey(genre)) {
+                    genresOccurences.put(genre, genresOccurences.get(genre) + 1);
+                } else {
+                    genresOccurences.put(genre, 1);
+                }
+            }
+        }
+
+        for (Map.Entry<Genre, Integer> pair : genresOccurences.entrySet()) {
+            genresPopularity.add(new EntityWithSortingCriteria(pair.getKey().toString(),
+                    (double) pair.getValue()));
+        }
+
+        Collections.sort(genresPopularity, Collections.reverseOrder());
+
+        for (EntityWithSortingCriteria sorter : genresPopularity) {
+            Genre genre = Utils.stringToGenre(sorter.toString());
+
+            for (Movie movie : movies.values()) {
+                if (movie.getGenres().contains(genre) && !movie.hasBeenViewedByUser(actionInput.getUsername())) {
+                    try {
+                        return writer.writeFile(actionInput.getActionId(),
+                                "message",
+                                "PopularRecommendation result: " + movie.getTitle());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+
+                        return new JSONObject();
+                    }
+                }
+            }
+
+            for (Serial serial : serials.values()) {
+                if (serial.getGenres().contains(genre) && !serial.hasBeenViewedByUser(actionInput.getUsername())) {
+                    try {
+                        return writer.writeFile(actionInput.getActionId(),
+                                "message",
+                                "PopularRecommendation result: " + serial.getTitle());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+
+                        return new JSONObject();
+                    }
+                }
+            }
+
+            try {
+                return writer.writeFile(actionInput.getActionId(),
+                        "message",
+                        "PopularRecommendation cannot be applied!");
+            } catch (IOException e) {
+                e.printStackTrace();
+
+                return new JSONObject();
+            }
+        }
+
+        return new JSONObject();
     }
 }
