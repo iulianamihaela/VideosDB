@@ -525,9 +525,8 @@ public class VideosDB {
 
         for (Actor actor : actors.values()) {
             boolean hasAwards = true;
-
             for (String award : awardsList) {
-                if (!actor.getAwards().containsKey(award)) {
+                if (!actor.getAwards().containsKey(Utils.stringToAwards(award))) {
                     hasAwards = false;
                     break;
                 }
@@ -579,7 +578,7 @@ public class VideosDB {
             boolean containsKeywords = true;
 
             for (String keyword : keywords) {
-                if (!actor.getCareerDescription().contains(keyword)) {
+                if (!Arrays.asList(actor.getCareerDescription().toLowerCase().split(" ")).contains(keyword)) {
                     containsKeywords = false;
                     break;
                 }
