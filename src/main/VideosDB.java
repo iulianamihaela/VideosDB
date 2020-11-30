@@ -1,22 +1,26 @@
 package main;
 
+import common.ActorWithSortingCriteria;
 import common.Constants;
 import entertainment.Movie;
 import entertainment.Serial;
+import fileio.Input;
+import fileio.UserInputData;
+import fileio.SerialInputData;
+import fileio.MovieInputData;
 import fileio.ActionInputData;
 import fileio.Writer;
-import fileio.MovieInputData;
-import fileio.SerialInputData;
-import fileio.UserInputData;
-import fileio.Input;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import user.User;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 public class VideosDB {
   private final HashMap<String, Movie> movies;
@@ -41,7 +45,7 @@ public class VideosDB {
     JSONArray result = new JSONArray();
 
     for (ActionInputData actionInput : input.getCommands()) {
-      JSONObject commandResult = executeCommand(actionInput, fileWriter);
+      JSONObject commandResult = executeAction(actionInput, fileWriter);
       if (commandResult != null && !commandResult.isEmpty()) {
         result.add(commandResult);
       }
@@ -103,14 +107,12 @@ public class VideosDB {
   }
 
   private JSONObject executeAction(final ActionInputData actionInput, final Writer writer) {
-    switch (actionInput.getActionType()) {
+    return switch (actionInput.getActionType()) {
       case Constants.COMMAND -> executeCommand(actionInput, writer);
-      case Constants.QUERY -> new JSONObject();
+      case Constants.QUERY -> executeQuery(actionInput, writer);
       case Constants.RECOMMENDATION -> new JSONObject();
       default -> new JSONObject();
-    }
-
-    return new JSONObject();
+    };
   }
 
   private JSONObject executeCommand(final ActionInputData actionInput, final Writer writer) {
@@ -127,6 +129,8 @@ public class VideosDB {
       default -> new JSONObject();
     };
   }
+
+
 
   /**
    * Executes a view command
@@ -155,7 +159,6 @@ public class VideosDB {
                 + " was viewed with total views of "
                 + movies.get(movieTitle).getViewsCount());
       } else {
-        // TO DO: Change text
         return output.writeFile(actionId, "message", "error -> " + movieTitle + " is not seen");
       }
     } catch (IOException e) {
@@ -280,6 +283,98 @@ public class VideosDB {
           e.printStackTrace();
         }
       }
+    }
+
+    return new JSONObject();
+  }
+
+  /**
+   * Process a query command
+   * @param actionInput action input
+   * @param writer output writer
+   * @return result
+   */
+  private JSONObject executeQuery(final ActionInputData actionInput, final Writer writer) {
+    return switch (actionInput.getObjectType()) {
+      case Constants.ACTORS -> executeActorsCriteria(actionInput, writer);
+      default -> new JSONObject();
+    };
+  }
+
+  /**
+   * Process a criteria actor execution
+   * @param actionInput action input
+   * @param writer output writer
+   * @return result
+   */
+  private JSONObject executeActorsCriteria(final ActionInputData actionInput, final Writer writer) {
+    return switch (actionInput.getCriteria()) {
+      case Constants.AVERAGE -> executeActorsAverageQuery(actionInput, writer);
+      case Constants.AWARDS -> new JSONObject();
+      case Constants.FILTER_DESCRIPTIONS -> new JSONObject();
+      default -> new JSONObject();
+    };
+  }
+
+  /**
+   * Executes an Actors Average query
+   * @param actionInput action input data
+   * @param writer output writer
+   * @return result
+   */
+  public JSONObject executeActorsAverageQuery(final ActionInputData actionInput,
+                                              final Writer writer) {
+    HashMap<String, Double> ratingForUser = new HashMap<>();
+    HashMap<String, Integer> noRatingsForUser = new HashMap<>();
+
+    ArrayList<ActorWithSortingCriteria> actorsWithRating = new ArrayList<>();
+
+    for (Movie movie : movies.values()) {
+      for (String actorName : movie.getCast()) {
+        if (movie.getRating() != 0) {
+          if (ratingForUser.containsKey(actorName)) {
+            ratingForUser.put(actorName, ratingForUser.get(actorName) + movie.getRating());
+            noRatingsForUser.put(actorName, noRatingsForUser.get(actorName) + 1);
+          } else {
+            ratingForUser.put(actorName, movie.getRating());
+            noRatingsForUser.put(actorName, 1);
+          }
+        }
+      }
+    }
+
+    for (Serial serial : serials.values()) {
+      for (String actorName : serial.getCast()) {
+        if (serial.getRating() != 0) {
+          if (ratingForUser.containsKey(actorName)) {
+            ratingForUser.put(actorName, ratingForUser.get(actorName) + serial.getRating());
+            noRatingsForUser.put(actorName, noRatingsForUser.get(actorName) + 1);
+          } else {
+            ratingForUser.put(actorName, serial.getRating());
+            noRatingsForUser.put(actorName, 1);
+          }
+        }
+      }
+    }
+
+    for (String name : ratingForUser.keySet()) {
+      actorsWithRating.add(new ActorWithSortingCriteria(name,
+              ratingForUser.get(name) / noRatingsForUser.get(name)));
+    }
+
+    Collections.sort(actorsWithRating);
+
+    try {
+      return writer.writeFile(actionInput.getActionId(),
+              "message",
+              "Query result: "
+                      + actorsWithRating
+                              .stream()
+                              .limit(actionInput.getNumber())
+                              .collect(Collectors.toList())
+      );
+    } catch (IOException e) {
+      e.printStackTrace();
     }
 
     return new JSONObject();

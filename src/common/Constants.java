@@ -77,4 +77,8 @@ public final class Constants {
   public static final String VIEW_COMMAND = "view";
   public static final String FAVORITE_COMMAND = "favorite";
   public static final String RATING_COMMAND = "rating";
+  public static final String AVERAGE = "average";
+
+  public static final String ASC_SORTING = "asc";
+  public static final String DESC_SORTING = "desc";
 }
