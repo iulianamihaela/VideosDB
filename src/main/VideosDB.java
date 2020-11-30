@@ -8,14 +8,25 @@ import entertainment.Genre;
 import entertainment.Movie;
 import entertainment.Season;
 import entertainment.Serial;
-import fileio.*;
+import fileio.Input;
+import fileio.ActionInputData;
+import fileio.UserInputData;
+import fileio.SerialInputData;
+import fileio.MovieInputData;
+import fileio.ActorInputData;
+import fileio.Writer;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import user.User;
 import utils.Utils;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.List;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public class VideosDB {
@@ -219,8 +230,8 @@ public class VideosDB {
         boolean hasBeenFavorited = false;
         boolean wasAlreadyFavorited = users.get(username).hasFavoriteMovie(title);
         boolean hasBeenViewedByUser =
-                (movies.containsKey(title) && movies.get(title).hasBeenViewedByUser(username))
-                        || (serials.containsKey(title) && serials.get(title).hasBeenViewedByUser(username));
+            (movies.containsKey(title) && movies.get(title).hasBeenViewedByUser(username))
+            || (serials.containsKey(title) && serials.get(title).hasBeenViewedByUser(username));
 
         if (titleExists && (hasBeenViewedByUser || wasAlreadyFavorited)) {
             if (!wasAlreadyFavorited) {
@@ -588,7 +599,11 @@ public class VideosDB {
             boolean containsKeywords = true;
 
             for (String keyword : keywords) {
-                if (!Arrays.asList(actor.getCareerDescription().toLowerCase().split("\\W+")).contains(keyword)) {
+                if (!Arrays.asList(actor
+                        .getCareerDescription()
+                        .toLowerCase()
+                        .split("\\W+"))
+                        .contains(keyword)) {
                     containsKeywords = false;
                     break;
                 }
@@ -1264,9 +1279,15 @@ public class VideosDB {
                                                      final Writer writer) {
         String result = "";
 
-        for (Movie movie : movies.values()) {
-            if (!movie.hasBeenViewedByUser(actionInput.getUsername())) {
-                result = movie.getTitle();
+        for (String title : videosOrder) {
+            if (movies.containsKey(title)
+                    && !movies.get(title).hasBeenViewedByUser(actionInput.getUsername())) {
+                result = title;
+                break;
+            } else if (serials.containsKey(title)
+                    && !serials.get(title).hasBeenViewedByUser(actionInput.getUsername())) {
+                result = title;
+                break;
             }
         }
 
@@ -1311,17 +1332,19 @@ public class VideosDB {
             if (movies.containsKey(name)
                     && !movies.get(name).hasBeenViewedByUser(actionInput.getUsername())) {
                 results.add(new EntityWithTwoSortingCriterias(name,
-                        movies.get(name).getRating(), (double) results.size()));
+                        movies.get(name).getRating(),
+                        videosOrder.size() - (double) results.size()));
             }
 
             if (serials.containsKey(name)
                     && !serials.get(name).hasBeenViewedByUser(actionInput.getUsername())) {
                 results.add(new EntityWithTwoSortingCriterias(name,
-                        serials.get(name).getRating(), (double) results.size()));
+                        serials.get(name).getRating(),
+                        videosOrder.size() - (double) results.size()));
             }
         }
 
-        Collections.sort(results);
+        Collections.sort(results, Collections.reverseOrder());
 
         if (results.size() <= 0) {
             try {
@@ -1352,30 +1375,30 @@ public class VideosDB {
             return recommendationFailure(actionInput, writer, "PopularRecommendation");
         }
 
-        HashMap<Genre, Integer> genresOccurences = new HashMap<>();
+        HashMap<Genre, Integer> genresOccurrences = new HashMap<>();
         List<EntityWithSortingCriteria> genresPopularity = new ArrayList<>();
 
         for (Movie movie : movies.values()) {
             for (Genre genre : movie.getGenres()) {
-                if (genresOccurences.containsKey(genre)) {
-                    genresOccurences.put(genre, genresOccurences.get(genre) + 1);
+                if (genresOccurrences.containsKey(genre)) {
+                    genresOccurrences.put(genre, genresOccurrences.get(genre) + 1);
                 } else {
-                    genresOccurences.put(genre, 1);
+                    genresOccurrences.put(genre, 1);
                 }
             }
         }
 
         for (Serial serial : serials.values()) {
             for (Genre genre : serial.getGenres()) {
-                if (genresOccurences.containsKey(genre)) {
-                    genresOccurences.put(genre, genresOccurences.get(genre) + 1);
+                if (genresOccurrences.containsKey(genre)) {
+                    genresOccurrences.put(genre, genresOccurrences.get(genre) + 1);
                 } else {
-                    genresOccurences.put(genre, 1);
+                    genresOccurrences.put(genre, 1);
                 }
             }
         }
 
-        for (Map.Entry<Genre, Integer> pair : genresOccurences.entrySet()) {
+        for (Map.Entry<Genre, Integer> pair : genresOccurrences.entrySet()) {
             genresPopularity.add(new EntityWithSortingCriteria(pair.getKey().toString(),
                     (double) pair.getValue()));
         }
@@ -1385,26 +1408,26 @@ public class VideosDB {
         for (EntityWithSortingCriteria sorter : genresPopularity) {
             Genre genre = Utils.stringToGenre(sorter.toString());
 
-            for (Movie movie : movies.values()) {
-                if (movie.getGenres().contains(genre) && !movie.hasBeenViewedByUser(actionInput.getUsername())) {
+            for (String title : videosOrder) {
+                if (movies.containsKey(title)
+                        && movies.get(title).getGenres().contains(genre)
+                        && !movies.get(title).hasBeenViewedByUser(actionInput.getUsername())) {
                     try {
                         return writer.writeFile(actionInput.getActionId(),
                                 "message",
-                                "PopularRecommendation result: " + movie.getTitle());
+                                "PopularRecommendation result: " + title);
                     } catch (IOException e) {
                         e.printStackTrace();
 
                         return new JSONObject();
                     }
-                }
-            }
-
-            for (Serial serial : serials.values()) {
-                if (serial.getGenres().contains(genre) && !serial.hasBeenViewedByUser(actionInput.getUsername())) {
+                } else if (serials.containsKey(title)
+                        && serials.get(title).getGenres().contains(genre)
+                        && !serials.get(title).hasBeenViewedByUser(actionInput.getUsername())) {
                     try {
                         return writer.writeFile(actionInput.getActionId(),
                                 "message",
-                                "PopularRecommendation result: " + serial.getTitle());
+                                "PopularRecommendation result: " + title);
                     } catch (IOException e) {
                         e.printStackTrace();
 
@@ -1433,23 +1456,23 @@ public class VideosDB {
             return recommendationFailure(actionInput, writer, "FavoriteRecommendation");
         }
 
-        HashMap<String, Integer> favoriteVideosOccurences = new HashMap<>();
+        HashMap<String, Integer> favoriteVideosOccurrences = new HashMap<>();
         List<EntityWithTwoSortingCriterias> resultList = new ArrayList<>();
 
         String user = actionInput.getUsername();
 
         for (User username : users.values()) {
             for (String title : username.getFavoriteVideos()) {
-                if (favoriteVideosOccurences.containsKey(title)) {
-                    favoriteVideosOccurences.put(title, favoriteVideosOccurences.get(title) + 1);
+                if (favoriteVideosOccurrences.containsKey(title)) {
+                    favoriteVideosOccurrences.put(title, favoriteVideosOccurrences.get(title) + 1);
                 } else {
-                    favoriteVideosOccurences.put(title, 1);
+                    favoriteVideosOccurrences.put(title, 1);
                 }
             }
         }
 
         for (String title : videosOrder) {
-            if (!favoriteVideosOccurences.containsKey(title)) {
+            if (!favoriteVideosOccurrences.containsKey(title)) {
                 continue;
             }
 
@@ -1458,8 +1481,8 @@ public class VideosDB {
                     resultList.add(
                             new EntityWithTwoSortingCriterias(
                                     title,
-                                    (double) favoriteVideosOccurences.get(title),
-                                    (double) resultList.size()
+                                    (double) favoriteVideosOccurrences.get(title),
+                                    videosOrder.size() - (double) resultList.size()
                             )
                     );
                 }
@@ -1468,8 +1491,8 @@ public class VideosDB {
                     resultList.add(
                             new EntityWithTwoSortingCriterias(
                                     title,
-                                    (double) favoriteVideosOccurences.get(title),
-                                    (double) resultList.size()
+                                    (double) favoriteVideosOccurrences.get(title),
+                                    videosOrder.size() - (double) resultList.size()
                             )
                     );
                 }
@@ -1555,7 +1578,8 @@ public class VideosDB {
         }
     }
 
-    private JSONObject recommendationFailure(ActionInputData actionInput, Writer writer, String recommendation) {
+    private JSONObject recommendationFailure(final ActionInputData actionInput,
+                                             final Writer writer, final String recommendation) {
         try {
             return writer.writeFile(actionInput.getActionId(),
                     "message",

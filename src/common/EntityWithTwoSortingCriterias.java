@@ -21,12 +21,12 @@ public class EntityWithTwoSortingCriterias implements Comparable {
     @Override
     public int compareTo(final Object o) {
         if (o instanceof EntityWithTwoSortingCriterias) {
-            int firstDiff = (int) (this.firstSortingCriteria
-                    - ((EntityWithTwoSortingCriterias) o).firstSortingCriteria);
+            int firstDiff = Double.compare(this.firstSortingCriteria,
+                    ((EntityWithTwoSortingCriterias) o).firstSortingCriteria);
 
             if (firstDiff == 0) {
-                return (int) (this.secondSortingCriteria
-                        - ((EntityWithTwoSortingCriterias) o).secondSortingCriteria);
+                return Double.compare(this.secondSortingCriteria,
+                        ((EntityWithTwoSortingCriterias) o).secondSortingCriteria);
             }
 
             return firstDiff;
