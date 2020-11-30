@@ -578,7 +578,7 @@ public class VideosDB {
             boolean containsKeywords = true;
 
             for (String keyword : keywords) {
-                if (!Arrays.asList(actor.getCareerDescription().toLowerCase().split(" ")).contains(keyword)) {
+                if (!Arrays.asList(actor.getCareerDescription().toLowerCase().split("\\W+")).contains(keyword)) {
                     containsKeywords = false;
                     break;
                 }
@@ -1244,7 +1244,7 @@ public class VideosDB {
             case Constants.STANDARD -> executeStandardRecommendation(actionInput, writer);
             case Constants.BEST_UNSEEN -> executeBestUnseenRecommendation(actionInput, writer);
             case Constants.POPULAR -> executePopularRecommendation(actionInput, writer);
-
+            case Constants.FAVORITE -> executeFavoriteRecommendation(actionInput, writer);
             default -> new JSONObject();
         };
     }
@@ -1410,5 +1410,75 @@ public class VideosDB {
         }
 
         return new JSONObject();
+    }
+
+    private JSONObject executeFavoriteRecommendation(final ActionInputData actionInput,
+                                                     final Writer writer) {
+        HashMap<String, Integer> favoriteVideosOccurences = new HashMap<>();
+        List<EntityWithTwoSortingCriterias> resultList = new ArrayList<>();
+
+        String user = actionInput.getUsername();
+
+        for (User username : users.values()) {
+            for (String title : username.getFavoriteVideos()) {
+                if (favoriteVideosOccurences.containsKey(title)) {
+                    favoriteVideosOccurences.put(title, favoriteVideosOccurences.get(title) + 1);
+                } else {
+                    favoriteVideosOccurences.put(title, 1);
+                }
+            }
+        }
+
+        for (String title : videosOrder) {
+            if (!favoriteVideosOccurences.containsKey(title)) {
+                continue;
+            }
+
+            if (movies.containsKey(title)) {
+                if (!movies.get(title).hasBeenViewedByUser(user)) {
+                    resultList.add(
+                            new EntityWithTwoSortingCriterias(
+                                    title,
+                                    (double) favoriteVideosOccurences.get(title),
+                                    (double) resultList.size()
+                            )
+                    );
+                }
+            } else if (serials.containsKey(title)) {
+                if (!serials.get(title).hasBeenViewedByUser(user)) {
+                    resultList.add(
+                            new EntityWithTwoSortingCriterias(
+                                    title,
+                                    (double) favoriteVideosOccurences.get(title),
+                                    (double) resultList.size()
+                            )
+                    );
+                }
+            }
+        }
+
+        Collections.sort(resultList, Collections.reverseOrder());
+
+        if (resultList.size() <= 0) {
+            try {
+                return writer.writeFile(actionInput.getActionId(),
+                        "message",
+                        "FavoriteRecommendation cannot be applied!");
+            } catch (IOException e) {
+                e.printStackTrace();
+
+                return new JSONObject();
+            }
+        }
+
+        try {
+            return writer.writeFile(actionInput.getActionId(),
+                    "message",
+                    "FavoriteRecommendation result: " + resultList.get(0));
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            return new JSONObject();
+        }
     }
 }
