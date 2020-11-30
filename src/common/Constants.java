@@ -76,5 +76,5 @@ public final class Constants {
   // add any constants you think you may use
   public static final String VIEW_COMMAND = "view";
   public static final String FAVORITE_COMMAND = "favorite";
-  public static final String RATING_COMMAND = "command";
+  public static final String RATING_COMMAND = "rating";
 }

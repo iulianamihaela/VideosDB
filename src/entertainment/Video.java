@@ -72,4 +72,20 @@ public abstract class Video {
     return views.containsKey(username)
             && views.get(username) >= 1;
   }
+
+  /**
+   * Retrieve's the video's rating
+   * @return video's rating
+   */
+  public Double getRating() {
+    return (double) 0;
+  }
+
+  /**
+   * Retrieve the video's cast
+   * @return actors name list
+   */
+  public ArrayList<String> getCast() {
+    return cast;
+  }
 }

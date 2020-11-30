@@ -36,4 +36,32 @@ public class Serial extends Video {
         serialInput.getCast(),
         serialInput.getSeasons());
   }
+
+  /**
+   * Returns the season with the given number
+   * @param seasonNumber season's number
+   * @return season
+   */
+  public Season getSeason(final int seasonNumber) {
+    return seasons.get(seasonNumber);
+  }
+
+  /**
+   * Retrieves the serial's rating
+   * @return serial's rating
+   */
+  @Override
+  public Double getRating() {
+    double rating = 0;
+
+    if (seasons == null || seasons.size() == 0) {
+      return (double) 0;
+    }
+
+    for (Season season : seasons) {
+      rating += season.getRating();
+    }
+
+    return rating / seasons.size();
+  }
 }

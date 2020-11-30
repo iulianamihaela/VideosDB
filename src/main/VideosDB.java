@@ -3,30 +3,29 @@ package main;
 import common.Constants;
 import entertainment.Movie;
 import entertainment.Serial;
+import fileio.ActionInputData;
 import fileio.Writer;
-import fileio.Input;
 import fileio.MovieInputData;
 import fileio.SerialInputData;
 import fileio.UserInputData;
-import fileio.ActionInputData;
+import fileio.Input;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import user.User;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class VideosDB {
   private final HashMap<String, Movie> movies;
-  private final ArrayList<Serial> serials;
+  private final HashMap<String, Serial> serials;
   private final HashMap<String, User> users;
 
   public VideosDB() {
     movies = new HashMap<>();
-    serials = new ArrayList<>();
+    serials = new HashMap<>();
     users = new HashMap<>();
   }
 
@@ -80,7 +79,7 @@ public class VideosDB {
    */
   private void readSerials(final List<SerialInputData> serialInputDataList) {
     for (SerialInputData serialInput : serialInputDataList) {
-      serials.add(new Serial(serialInput));
+      serials.put(serialInput.getTitle(), new Serial(serialInput));
     }
   }
 
@@ -124,7 +123,7 @@ public class VideosDB {
     return switch (type) {
       case Constants.VIEW_COMMAND -> executeViewCommand(actionInput, writer);
       case Constants.FAVORITE_COMMAND -> executeFavoriteCommand(actionInput, writer);
-      case Constants.RATING_COMMAND -> new JSONObject();
+      case Constants.RATING_COMMAND -> executeRatingCommand(actionInput, writer);
       default -> new JSONObject();
     };
   }
@@ -214,11 +213,73 @@ public class VideosDB {
                           + " was added as favourite");
         }
       } else {
-        // TO DO: Change text
         return output.writeFile(actionId, "message", "error -> " + movieTitle + " is not seen");
       }
     } catch (IOException e) {
       e.printStackTrace();
+    }
+
+    return new JSONObject();
+  }
+
+  /**
+   * Executes a rating command
+   *
+   * @param actionInput action input data
+   * @param output output writer
+   * @return JsonObject
+   */
+  private JSONObject executeRatingCommand(final ActionInputData actionInput,
+                                          final Writer output) {
+    int actionId = actionInput.getActionId();
+    String user = actionInput.getUsername();
+    String title = actionInput.getTitle();
+
+    if (movies.containsKey(title)) {
+      if (!movies.get(title).existsRatingFromUser(user)) {
+        movies.get(title).addRatingForUser(user, actionInput.getGrade());
+        try {
+          return output.writeFile(actionId,
+                  "message",
+                  "success -> "
+                          + title
+                          + " was rated with "
+                          + String.format("%.1f", actionInput.getGrade())
+                          + " by "
+                          + user);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      } else {
+        try {
+          return output.writeFile(actionId,
+                  "message",
+                  "error -> "
+                          + title
+                          + " has been already rated");
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+
+    int seasonNumber = actionInput.getSeasonNumber() - 1;
+    if (serials.containsKey(title)) {
+      if (!serials.get(title).getSeason(seasonNumber).isRatedByUser(user)) {
+        serials.get(title).getSeason(seasonNumber).addRatingByUser(user, actionInput.getGrade());
+        try {
+          return output.writeFile(actionId,
+                  "message",
+                  "success -> "
+                          + title
+                          + " was rated with "
+                          + String.format("%.1f", actionInput.getGrade())
+                          + " by "
+                          + user);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
     }
 
     return new JSONObject();
