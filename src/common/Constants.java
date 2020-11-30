@@ -84,6 +84,7 @@ public final class Constants {
     public static final String STANDARD = "standard";
     public static final String BEST_UNSEEN = "best_unseen";
     public static final String POPULAR = "popular";
+    public static final String SEARCH = "search";
 
     public static final String RATINGS_CRITERIA = "ratings";
 

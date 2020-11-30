@@ -220,7 +220,7 @@ public class VideosDB {
         boolean wasAlreadyFavorited = users.get(username).hasFavoriteMovie(title);
         boolean hasBeenViewedByUser =
                 (movies.containsKey(title) && movies.get(title).hasBeenViewedByUser(username))
-                || (serials.containsKey(title) && serials.get(title).hasBeenViewedByUser(username));
+                        || (serials.containsKey(title) && serials.get(title).hasBeenViewedByUser(username));
 
         if (titleExists && (hasBeenViewedByUser || wasAlreadyFavorited)) {
             if (!wasAlreadyFavorited) {
@@ -334,6 +334,16 @@ public class VideosDB {
                                     + String.format("%.1f", actionInput.getGrade())
                                     + " by "
                                     + user);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                try {
+                    return output.writeFile(actionId,
+                            "message",
+                            "error -> "
+                                    + title
+                                    + " has been already rated");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -1245,6 +1255,7 @@ public class VideosDB {
             case Constants.BEST_UNSEEN -> executeBestUnseenRecommendation(actionInput, writer);
             case Constants.POPULAR -> executePopularRecommendation(actionInput, writer);
             case Constants.FAVORITE -> executeFavoriteRecommendation(actionInput, writer);
+            case Constants.SEARCH -> executeSearchRecommendation(actionInput, writer);
             default -> new JSONObject();
         };
     }
@@ -1337,6 +1348,10 @@ public class VideosDB {
 
     private JSONObject executePopularRecommendation(final ActionInputData actionInput,
                                                     final Writer writer) {
+        if (!users.get(actionInput.getUsername()).isPremium()) {
+            return recommendationFailure(actionInput, writer, "PopularRecommendation");
+        }
+
         HashMap<Genre, Integer> genresOccurences = new HashMap<>();
         List<EntityWithSortingCriteria> genresPopularity = new ArrayList<>();
 
@@ -1414,6 +1429,10 @@ public class VideosDB {
 
     private JSONObject executeFavoriteRecommendation(final ActionInputData actionInput,
                                                      final Writer writer) {
+        if (!users.get(actionInput.getUsername()).isPremium()) {
+            return recommendationFailure(actionInput, writer, "FavoriteRecommendation");
+        }
+
         HashMap<String, Integer> favoriteVideosOccurences = new HashMap<>();
         List<EntityWithTwoSortingCriterias> resultList = new ArrayList<>();
 
@@ -1475,6 +1494,72 @@ public class VideosDB {
             return writer.writeFile(actionInput.getActionId(),
                     "message",
                     "FavoriteRecommendation result: " + resultList.get(0));
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            return new JSONObject();
+        }
+    }
+
+    private JSONObject executeSearchRecommendation(final ActionInputData actionInput,
+                                                   final Writer writer) {
+        if (!users.get(actionInput.getUsername()).isPremium()) {
+            return recommendationFailure(actionInput, writer, "SearchRecommendation");
+        }
+
+        List<EntityWithSortingCriteria> resultList = new ArrayList<>();
+
+        Genre genre = Utils.stringToGenre(actionInput.getGenre());
+        String user = actionInput.getUsername();
+
+        for (Movie movie : movies.values()) {
+            if (!movie.hasBeenViewedByUser(user) && movie.getGenres().contains(genre)) {
+                resultList.add(new EntityWithSortingCriteria(
+                        movie.getTitle(),
+                        movie.getRating()
+                ));
+            }
+        }
+
+        for (Serial serial : serials.values()) {
+            if (!serial.hasBeenViewedByUser(user) && serial.getGenres().contains(genre)) {
+                resultList.add(new EntityWithSortingCriteria(
+                        serial.getTitle(),
+                        serial.getRating()
+                ));
+            }
+        }
+
+        Collections.sort(resultList);
+
+        if (resultList.size() <= 0) {
+            try {
+                return writer.writeFile(actionInput.getActionId(),
+                        "message",
+                        "SearchRecommendation cannot be applied!");
+            } catch (IOException e) {
+                e.printStackTrace();
+
+                return new JSONObject();
+            }
+        }
+
+        try {
+            return writer.writeFile(actionInput.getActionId(),
+                    "message",
+                    "SearchRecommendation result: " + resultList);
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            return new JSONObject();
+        }
+    }
+
+    private JSONObject recommendationFailure(ActionInputData actionInput, Writer writer, String recommendation) {
+        try {
+            return writer.writeFile(actionInput.getActionId(),
+                    "message",
+                    recommendation + " cannot be applied!");
         } catch (IOException e) {
             e.printStackTrace();
 

@@ -69,4 +69,13 @@ public class User {
     public boolean hasFavoriteMovie(final String movieTitle) {
         return favoriteVideos.contains(movieTitle);
     }
+
+    /**
+     * Retrieves if the user is PREMIUM
+     *
+     * @return result
+     */
+    public boolean isPremium() {
+        return userType == UserType.PREMIUM;
+    }
 }
