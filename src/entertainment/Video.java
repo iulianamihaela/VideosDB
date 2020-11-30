@@ -88,4 +88,28 @@ public abstract class Video {
   public ArrayList<String> getCast() {
     return cast;
   }
+
+  /**
+   * Retrieves the video's name
+   * @return video's name
+   */
+  public String getTitle() {
+    return title;
+  }
+
+  /**
+   * Retrieves the video's release year
+   * @return video's release year
+   */
+  public int getReleaseYear() {
+    return releaseYear;
+  }
+
+  /**
+   * Retrieves the video's genres
+   * @return video's video's genres
+   */
+  public ArrayList<Genre> getGenres() {
+    return genres;
+  }
 }

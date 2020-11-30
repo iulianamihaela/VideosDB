@@ -79,9 +79,13 @@ public final class Constants {
   public static final String RATING_COMMAND = "rating";
   public static final String AVERAGE = "average";
 
+  public static final String RATINGS_CRITERIA = "ratings";
+
   public static final String ASC_SORTING = "asc";
   public static final String DESC_SORTING = "desc";
 
+  public static final int YEAR_FILTER_POSITION = 0;
+  public static final int GENRE_FILTER_POSITION = 1;
   public static final int WORDS_FILTER_POSITION = 2;
   public static final int AWARDS_FILTER_POSITION = 3;
 }
