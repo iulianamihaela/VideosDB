@@ -38,15 +38,9 @@ public class BestUnseenRecommendation {
         Collections.sort(results, Collections.reverseOrder());
 
         if (results.size() <= 0) {
-            try {
-                return writer.writeFile(actionInput.getActionId(),
-                        "message",
-                        "BestRatedUnseenRecommendation cannot be applied!");
-            } catch (IOException e) {
-                e.printStackTrace();
-
-                return new JSONObject();
-            }
+            return RecommendationUtils.recommendationFailure(actionInput,
+                    writer,
+                    "BestRatedUnseenRecommendation");
         }
 
         try {

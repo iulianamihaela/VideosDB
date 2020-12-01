@@ -69,15 +69,9 @@ public class FavoriteRecommendation {
         Collections.sort(resultList, Collections.reverseOrder());
 
         if (resultList.size() <= 0) {
-            try {
-                return writer.writeFile(actionInput.getActionId(),
-                        "message",
-                        "FavoriteRecommendation cannot be applied!");
-            } catch (IOException e) {
-                e.printStackTrace();
-
-                return new JSONObject();
-            }
+            return RecommendationUtils.recommendationFailure(actionInput,
+                    writer,
+                    "FavoriteRecommendation");
         }
 
         try {

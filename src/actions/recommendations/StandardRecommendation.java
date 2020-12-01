@@ -50,14 +50,8 @@ public class StandardRecommendation {
             }
         }
 
-        try {
-            return writer.writeFile(actionInput.getActionId(),
-                    "message",
-                    "StandardRecommendation cannot be applied!");
-        } catch (IOException e) {
-            e.printStackTrace();
-
-            return new JSONObject();
-        }
+        return RecommendationUtils.recommendationFailure(actionInput,
+                writer,
+                "StandardRecommendation");
     }
 }

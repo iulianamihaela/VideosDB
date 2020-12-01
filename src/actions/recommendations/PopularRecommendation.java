@@ -86,15 +86,9 @@ public class PopularRecommendation {
                 }
             }
 
-            try {
-                return writer.writeFile(actionInput.getActionId(),
-                        "message",
-                        "PopularRecommendation cannot be applied!");
-            } catch (IOException e) {
-                e.printStackTrace();
-
-                return new JSONObject();
-            }
+            return RecommendationUtils.recommendationFailure(actionInput,
+                    writer,
+                    "PopularRecommendation");
         }
 
         return new JSONObject();

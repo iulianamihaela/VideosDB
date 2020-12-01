@@ -51,15 +51,9 @@ public class SearchRecommendation {
         Collections.sort(resultList);
 
         if (resultList.size() <= 0) {
-            try {
-                return writer.writeFile(actionInput.getActionId(),
-                        "message",
-                        "SearchRecommendation cannot be applied!");
-            } catch (IOException e) {
-                e.printStackTrace();
-
-                return new JSONObject();
-            }
+            return RecommendationUtils.recommendationFailure(actionInput,
+                    writer,
+                    "SearchRecommendation");
         }
 
         try {
