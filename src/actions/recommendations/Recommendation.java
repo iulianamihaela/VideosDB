@@ -6,7 +6,17 @@ import fileio.Writer;
 import main.Database;
 import org.json.simple.JSONObject;
 
-public class Recommendation {
+public final class Recommendation {
+    private Recommendation() { }
+
+    /**
+     * Process a recommendation
+     *
+     * @param database    database
+     * @param actionInput action input data
+     * @param writer      output writer
+     * @return recommendation result as JSONObject
+     */
     public static JSONObject execute(final Database database,
                                      final ActionInputData actionInput,
                                      final Writer writer) {

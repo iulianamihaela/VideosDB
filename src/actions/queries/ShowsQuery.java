@@ -17,7 +17,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ShowsQuery {
+public final class ShowsQuery {
+    private ShowsQuery() { }
+
     /**
      * Process shows query
      *

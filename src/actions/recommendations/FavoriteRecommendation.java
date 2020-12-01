@@ -13,7 +13,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-public class FavoriteRecommendation {
+public final class FavoriteRecommendation {
+    private FavoriteRecommendation() { }
+
+    /**
+     * Executes a favorite recommendation
+     *
+     * @param database    database
+     * @param actionInput action input data
+     * @param writer      output writer
+     * @return recommendation result as JSONObject
+     */
     public static JSONObject execute(final Database database,
                                      final ActionInputData actionInput,
                                      final Writer writer) {

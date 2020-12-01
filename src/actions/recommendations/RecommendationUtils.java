@@ -6,10 +6,20 @@ import org.json.simple.JSONObject;
 
 import java.io.IOException;
 
-public class RecommendationUtils {
-    public static JSONObject recommendationFailure(final ActionInputData actionInput,
-                                                   final Writer writer,
-                                                   final String typeOfRecommendation) {
+final class RecommendationUtils {
+    private RecommendationUtils() { }
+
+    /**
+     * Returns a recommendation failure message as JSON Object
+     *
+     * @param actionInput          action input data
+     * @param writer               output writer
+     * @param typeOfRecommendation type of recommendation
+     * @return recommendation failure message as JSONObject
+     */
+    static JSONObject recommendationFailure(final ActionInputData actionInput,
+                                            final Writer writer,
+                                            final String typeOfRecommendation) {
         try {
             return writer.writeFile(actionInput.getActionId(),
                     "message",

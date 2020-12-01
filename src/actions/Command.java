@@ -8,7 +8,9 @@ import org.json.simple.JSONObject;
 
 import java.io.IOException;
 
-public class Command {
+public final class Command {
+    private Command() { }
+
     /**
      * Process a simple command
      * @param database    database

@@ -6,7 +6,9 @@ import fileio.Writer;
 import main.Database;
 import org.json.simple.JSONObject;
 
-public class Query {
+public final class Query {
+    private Query() { }
+
     /**
      * Process a query command
      *

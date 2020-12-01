@@ -11,9 +11,23 @@ import org.json.simple.JSONObject;
 import utils.Utils;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Collections;
 
-public class PopularRecommendation {
+public final class PopularRecommendation {
+    private PopularRecommendation() { }
+
+    /**
+     * Executes a popular recommendation
+     *
+     * @param database    database
+     * @param actionInput action input data
+     * @param writer      output writer
+     * @return recommendation result as JSONObject
+     */
     public static JSONObject execute(final Database database,
                                      final ActionInputData actionInput,
                                      final Writer writer) {

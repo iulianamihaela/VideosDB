@@ -11,10 +11,16 @@ import main.Database;
 import org.json.simple.JSONObject;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-public class UsersQuery {
+public final class UsersQuery {
+    private UsersQuery() { }
+
     /**
      * Process users query
      *
@@ -24,8 +30,8 @@ public class UsersQuery {
      * @return result
      */
     public static JSONObject execute(final Database database,
-                               final ActionInputData actionInput,
-                               final Writer writer) {
+                                     final ActionInputData actionInput,
+                                     final Writer writer) {
         return switch (actionInput.getCriteria()) {
             case Constants.NUM_RATINGS -> executeNumRatings(database,
                     actionInput,

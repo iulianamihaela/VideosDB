@@ -12,10 +12,16 @@ import org.json.simple.JSONObject;
 import utils.Utils;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
-public class ActorsQuery {
+public final class ActorsQuery {
+    private ActorsQuery() { }
+
     /**
      * Process an actors query
      *

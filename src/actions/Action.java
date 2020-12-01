@@ -8,10 +8,20 @@ import fileio.Writer;
 import main.Database;
 import org.json.simple.JSONObject;
 
-public class Action {
-    public static JSONObject execute(Database database,
-                                     ActionInputData actionInput,
-                                     Writer writer) {
+public final class Action {
+    private Action() { }
+
+    /**
+     * Executes an action
+     *
+     * @param database    database
+     * @param actionInput action input
+     * @param writer      output writer
+     * @return action result as JSONObject
+     */
+    public static JSONObject execute(final Database database,
+                                     final ActionInputData actionInput,
+                                     final Writer writer) {
 
         return switch (actionInput.getActionType()) {
             case Constants.COMMAND -> Command.execute(database,

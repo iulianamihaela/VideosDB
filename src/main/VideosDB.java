@@ -4,7 +4,13 @@ import actions.Action;
 import actor.Actor;
 import entertainment.Movie;
 import entertainment.Serial;
-import fileio.*;
+import fileio.Input;
+import fileio.Writer;
+import fileio.MovieInputData;
+import fileio.SerialInputData;
+import fileio.UserInputData;
+import fileio.ActorInputData;
+import fileio.ActionInputData;
 import org.json.simple.JSONArray;
 import user.User;
 

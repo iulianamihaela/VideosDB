@@ -15,7 +15,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class SearchRecommendation {
+public final class SearchRecommendation {
+    private SearchRecommendation() { }
+
+    /**
+     * Executes a search recommendation
+     *
+     * @param database    database
+     * @param actionInput action input data
+     * @param writer      output writer
+     * @return recommendation result as JSONObject
+     */
     public static JSONObject execute(final Database database,
                                      final ActionInputData actionInput,
                                      final Writer writer) {

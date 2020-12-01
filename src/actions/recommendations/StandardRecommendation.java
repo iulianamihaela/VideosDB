@@ -8,7 +8,17 @@ import org.json.simple.JSONObject;
 
 import java.io.IOException;
 
-public class StandardRecommendation {
+public final class StandardRecommendation {
+    private StandardRecommendation() { }
+
+    /**
+     * Executes a standard recommendation
+     *
+     * @param database    database
+     * @param actionInput action input data
+     * @param writer      output writer
+     * @return recommendation result as JSONObject
+     */
     public static JSONObject execute(final Database database,
                                final ActionInputData actionInput,
                                final Writer writer) {
