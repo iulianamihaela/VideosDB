@@ -30,20 +30,10 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public class VideosDB {
-    private final HashMap<String, Movie> movies;
-    private final HashMap<String, Serial> serials;
-    private final HashMap<String, Actor> actors;
-    private final HashMap<String, User> users;
-
-    private final List<String> videosOrder;
+    private final Database database;
 
     public VideosDB() {
-        movies = new HashMap<>();
-        serials = new HashMap<>();
-        users = new HashMap<>();
-        actors = new HashMap<>();
-
-        videosOrder = new ArrayList<>();
+         database = new Database();
     }
 
     /**
@@ -86,20 +76,20 @@ public class VideosDB {
      */
     private void readMovies(final List<MovieInputData> movieInputDataList) {
         for (MovieInputData movieInput : movieInputDataList) {
-            videosOrder.add(movieInput.getTitle());
-            movies.put(movieInput.getTitle(), new Movie(movieInput));
+            database.getVideosOrder().add(movieInput.getTitle());
+            database.getMovies().put(movieInput.getTitle(), new Movie(movieInput));
         }
     }
 
     /**
-     * Reads serials from list
+     * Reads getSerials() from list
      *
-     * @param serialInputDataList list of input data for serials
+     * @param serialInputDataList list of input data for getSerials()
      */
     private void readSerials(final List<SerialInputData> serialInputDataList) {
         for (SerialInputData serialInput : serialInputDataList) {
-            videosOrder.add(serialInput.getTitle());
-            serials.put(serialInput.getTitle(), new Serial(serialInput));
+            database.getVideosOrder().add(serialInput.getTitle());
+            database.getSerials().put(serialInput.getTitle(), new Serial(serialInput));
         }
     }
 
@@ -110,7 +100,7 @@ public class VideosDB {
      */
     private void readActors(final List<ActorInputData> actorInputDataList) {
         for (ActorInputData actorInput : actorInputDataList) {
-            actors.put(actorInput.getName(), new Actor(actorInput));
+            database.getActors().put(actorInput.getName(), new Actor(actorInput));
         }
     }
 
@@ -121,18 +111,20 @@ public class VideosDB {
      */
     private void readUsers(final List<UserInputData> userInputDataList) {
         for (UserInputData userInput : userInputDataList) {
-            users.put(userInput.getUsername(), new User(userInput));
+            database.getUsers().put(userInput.getUsername(), new User(userInput));
 
             HashMap<String, Integer> history = new HashMap<>(userInput.getHistory());
 
             for (Map.Entry<String, Integer> pair : history.entrySet()) {
-                if (movies.containsKey(pair.getKey())) {
-                    movies.get(pair.getKey()).addViewsForUser(userInput.getUsername(),
-                            pair.getValue());
+                if (database.getMovies().containsKey(pair.getKey())) {
+                    database.getMovies()
+                            .get(pair.getKey())
+                            .addViewsForUser(userInput.getUsername(), pair.getValue());
                 }
-                if (serials.containsKey(pair.getKey())) {
-                    serials.get(pair.getKey()).addViewsForUser(userInput.getUsername(),
-                            pair.getValue());
+                if (database.getSerials().containsKey(pair.getKey())) {
+                    database.getSerials()
+                            .get(pair.getKey())
+                            .addViewsForUser(userInput.getUsername(), pair.getValue());
                 }
             }
         }
@@ -175,16 +167,17 @@ public class VideosDB {
         String title = actionInput.getTitle();
         String user = actionInput.getUsername();
 
-        boolean titleExists = movies.containsKey(title) || serials.containsKey(title);
+        boolean titleExists = database.getMovies().containsKey(title)
+                || database.getSerials().containsKey(title);
         int views = 0;
 
         if (titleExists) {
-            if (movies.containsKey(title)) {
-                movies.get(title).addViewer(user);
-                views = movies.get(title).getUsersViews(user);
-            } else if (serials.containsKey(title)) {
-                serials.get(title).addViewer(user);
-                views = serials.get(title).getUsersViews(user);
+            if (database.getMovies().containsKey(title)) {
+                database.getMovies().get(title).addViewer(user);
+                views = database.getMovies().get(title).getUsersViews(user);
+            } else if (database.getSerials().containsKey(title)) {
+                database.getSerials().get(title).addViewer(user);
+                views = database.getSerials().get(title).getUsersViews(user);
             }
         }
 
@@ -221,21 +214,24 @@ public class VideosDB {
         String title = actionInput.getTitle();
         String username = actionInput.getUsername();
 
-        boolean titleExists = movies.containsKey(title) || serials.containsKey(title);
+        boolean titleExists = database.getMovies().containsKey(title)
+                || database.getSerials().containsKey(title);
 
         if (!titleExists) {
             return new JSONObject();
         }
 
         boolean hasBeenFavorited = false;
-        boolean wasAlreadyFavorited = users.get(username).hasFavoriteMovie(title);
+        boolean wasAlreadyFavorited = database.getUsers().get(username).hasFavoriteMovie(title);
         boolean hasBeenViewedByUser =
-            (movies.containsKey(title) && movies.get(title).hasBeenViewedByUser(username))
-            || (serials.containsKey(title) && serials.get(title).hasBeenViewedByUser(username));
+            (database.getMovies().containsKey(title)
+                    && database.getMovies().get(title).hasBeenViewedByUser(username))
+            || (database.getSerials().containsKey(title)
+                    && database.getSerials().get(title).hasBeenViewedByUser(username));
 
         if (titleExists && (hasBeenViewedByUser || wasAlreadyFavorited)) {
             if (!wasAlreadyFavorited) {
-                users.get(username).addFavorite(title);
+                database.getUsers().get(username).addFavorite(title);
             }
             hasBeenFavorited = true;
         }
@@ -281,9 +277,9 @@ public class VideosDB {
         String user = actionInput.getUsername();
         String title = actionInput.getTitle();
 
-        if (movies.containsKey(title)) {
-            if (!movies.get(title).existsRatingFromUser(user)) {
-                if (!movies.get(title).hasBeenViewedByUser(user)) {
+        if (database.getMovies().containsKey(title)) {
+            if (!database.getMovies().get(title).existsRatingFromUser(user)) {
+                if (!database.getMovies().get(title).hasBeenViewedByUser(user)) {
                     try {
                         return output.writeFile(actionId,
                                 "message",
@@ -294,7 +290,7 @@ public class VideosDB {
                         e.printStackTrace();
                     }
                 }
-                movies.get(title).addRatingForUser(user, actionInput.getGrade());
+                database.getMovies().get(title).addRatingForUser(user, actionInput.getGrade());
                 try {
                     return output.writeFile(actionId,
                             "message",
@@ -321,8 +317,8 @@ public class VideosDB {
         }
 
         int seasonNumber = actionInput.getSeasonNumber() - 1;
-        if (serials.containsKey(title)) {
-            if (!serials.get(title).hasBeenViewedByUser(user)) {
+        if (database.getSerials().containsKey(title)) {
+            if (!database.getSerials().get(title).hasBeenViewedByUser(user)) {
                 try {
                     return output.writeFile(actionId,
                             "message",
@@ -333,8 +329,8 @@ public class VideosDB {
                     e.printStackTrace();
                 }
             }
-            if (!serials.get(title).getSeason(seasonNumber).isRatedByUser(user)) {
-                serials.get(title).getSeason(seasonNumber).addRatingByUser(user,
+            if (!database.getSerials().get(title).getSeason(seasonNumber).isRatedByUser(user)) {
+                database.getSerials().get(title).getSeason(seasonNumber).addRatingByUser(user,
                         actionInput.getGrade());
                 try {
                     return output.writeFile(actionId,
@@ -473,7 +469,7 @@ public class VideosDB {
 
         ArrayList<EntityWithSortingCriteria> actorsWithRating = new ArrayList<>();
 
-        for (Movie movie : movies.values()) {
+        for (Movie movie : database.getMovies().values()) {
             for (String actorName : movie.getCast()) {
                 if (movie.getRating() != 0) {
                     if (ratingForUser.containsKey(actorName)) {
@@ -488,7 +484,7 @@ public class VideosDB {
             }
         }
 
-        for (Serial serial : serials.values()) {
+        for (Serial serial : database.getSerials().values()) {
             for (String actorName : serial.getCast()) {
                 if (serial.getRating() != 0) {
                     if (ratingForUser.containsKey(actorName)) {
@@ -544,7 +540,7 @@ public class VideosDB {
 
         List<EntityWithSortingCriteria> actorsResult = new ArrayList<>();
 
-        for (Actor actor : actors.values()) {
+        for (Actor actor : database.getActors().values()) {
             boolean hasAwards = true;
             for (String award : awardsList) {
                 if (!actor.getAwards().containsKey(Utils.stringToAwards(award))) {
@@ -595,7 +591,7 @@ public class VideosDB {
 
         List<EntityWithSortingCriteria> actorsResult = new ArrayList<>();
 
-        for (Actor actor : actors.values()) {
+        for (Actor actor : database.getActors().values()) {
             boolean containsKeywords = true;
 
             for (String keyword : keywords) {
@@ -669,7 +665,7 @@ public class VideosDB {
             hasGenreFilter = false;
         }
 
-        for (Movie movie : movies.values()) {
+        for (Movie movie : database.getMovies().values()) {
             if (hasYearFilter && movie.getReleaseYear() != releaseYear) {
                 continue;
             }
@@ -738,7 +734,7 @@ public class VideosDB {
             hasGenreFilter = false;
         }
 
-        for (Serial serial : serials.values()) {
+        for (Serial serial : database.getSerials().values()) {
             if (hasYearFilter && serial.getReleaseYear() != releaseYear) {
                 continue;
             }
@@ -807,7 +803,7 @@ public class VideosDB {
             hasGenreFilter = false;
         }
 
-        for (Movie movie : movies.values()) {
+        for (Movie movie : database.getMovies().values()) {
             if (hasYearFilter && movie.getReleaseYear() != releaseYear) {
                 continue;
             }
@@ -817,7 +813,7 @@ public class VideosDB {
 
             int occurences = 0;
 
-            for (User user : users.values()) {
+            for (User user : database.getUsers().values()) {
                 if (user.hasFavoriteMovie(movie.getTitle())) {
                     occurences++;
                 }
@@ -884,7 +880,7 @@ public class VideosDB {
             hasGenreFilter = false;
         }
 
-        for (Serial serial : serials.values()) {
+        for (Serial serial : database.getSerials().values()) {
             if (hasYearFilter && serial.getReleaseYear() != releaseYear) {
                 continue;
             }
@@ -894,7 +890,7 @@ public class VideosDB {
 
             int occurences = 0;
 
-            for (User user : users.values()) {
+            for (User user : database.getUsers().values()) {
                 if (user.hasFavoriteMovie(serial.getTitle())) {
                     occurences++;
                 }
@@ -961,7 +957,7 @@ public class VideosDB {
             hasGenreFilter = false;
         }
 
-        for (Movie movie : movies.values()) {
+        for (Movie movie : database.getMovies().values()) {
             if (hasYearFilter && movie.getReleaseYear() != releaseYear) {
                 continue;
             }
@@ -1028,7 +1024,7 @@ public class VideosDB {
             hasGenreFilter = false;
         }
 
-        for (Serial serial : serials.values()) {
+        for (Serial serial : database.getSerials().values()) {
             if (hasYearFilter && serial.getReleaseYear() != releaseYear) {
                 continue;
             }
@@ -1095,7 +1091,7 @@ public class VideosDB {
             hasGenreFilter = false;
         }
 
-        for (Movie movie : movies.values()) {
+        for (Movie movie : database.getMovies().values()) {
             if (hasYearFilter && movie.getReleaseYear() != releaseYear) {
                 continue;
             }
@@ -1165,7 +1161,7 @@ public class VideosDB {
             hasGenreFilter = false;
         }
 
-        for (Serial serial : serials.values()) {
+        for (Serial serial : database.getSerials().values()) {
             if (hasYearFilter && serial.getReleaseYear() != releaseYear) {
                 continue;
             }
@@ -1208,7 +1204,7 @@ public class VideosDB {
         HashMap<String, Integer> usersWithTotalRatings = new HashMap<>();
         List<EntityWithSortingCriteria> usersResult = new ArrayList<>();
 
-        for (Movie movie : movies.values()) {
+        for (Movie movie : database.getMovies().values()) {
             for (String user : movie.getRatingsForUsers().keySet()) {
                 if (usersWithTotalRatings.containsKey(user)) {
                     usersWithTotalRatings.put(user, usersWithTotalRatings.get(user) + 1);
@@ -1218,7 +1214,7 @@ public class VideosDB {
             }
         }
 
-        for (Serial serial : serials.values()) {
+        for (Serial serial : database.getSerials().values()) {
             for (Season season : serial.getSeasons()) {
                 for (String user : season.getRatingsForUsers().keySet()) {
                     if (usersWithTotalRatings.containsKey(user)) {
@@ -1279,20 +1275,22 @@ public class VideosDB {
                                                      final Writer writer) {
         String result = "";
 
-        for (String title : videosOrder) {
-            if (movies.containsKey(title)
-                    && !movies.get(title).hasBeenViewedByUser(actionInput.getUsername())) {
+        for (String title : database.getVideosOrder()) {
+            if (database.getMovies().containsKey(title)
+                    && !database.getMovies().get(title)
+                            .hasBeenViewedByUser(actionInput.getUsername())) {
                 result = title;
                 break;
-            } else if (serials.containsKey(title)
-                    && !serials.get(title).hasBeenViewedByUser(actionInput.getUsername())) {
+            } else if (database.getSerials().containsKey(title)
+                    && !database.getSerials().get(title)
+                            .hasBeenViewedByUser(actionInput.getUsername())) {
                 result = title;
                 break;
             }
         }
 
         if (result.isEmpty()) {
-            for (Serial serial : serials.values()) {
+            for (Serial serial : database.getSerials().values()) {
                 if (!serial.hasBeenViewedByUser(actionInput.getUsername())) {
                     result = serial.getTitle();
                 }
@@ -1328,19 +1326,21 @@ public class VideosDB {
                                                        final Writer writer) {
         List<EntityWithTwoSortingCriterias> results = new ArrayList<>();
 
-        for (String name : videosOrder) {
-            if (movies.containsKey(name)
-                    && !movies.get(name).hasBeenViewedByUser(actionInput.getUsername())) {
+        for (String name : database.getVideosOrder()) {
+            if (database.getMovies().containsKey(name)
+                    && !database.getMovies().get(name)
+                            .hasBeenViewedByUser(actionInput.getUsername())) {
                 results.add(new EntityWithTwoSortingCriterias(name,
-                        movies.get(name).getRating(),
-                        videosOrder.size() - (double) results.size()));
+                        database.getMovies().get(name).getRating(),
+                        database.getVideosOrder().size() - (double) results.size()));
             }
 
-            if (serials.containsKey(name)
-                    && !serials.get(name).hasBeenViewedByUser(actionInput.getUsername())) {
+            if (database.getSerials().containsKey(name)
+                    && !database.getSerials().get(name)
+                            .hasBeenViewedByUser(actionInput.getUsername())) {
                 results.add(new EntityWithTwoSortingCriterias(name,
-                        serials.get(name).getRating(),
-                        videosOrder.size() - (double) results.size()));
+                        database.getSerials().get(name).getRating(),
+                        database.getVideosOrder().size() - (double) results.size()));
             }
         }
 
@@ -1371,14 +1371,14 @@ public class VideosDB {
 
     private JSONObject executePopularRecommendation(final ActionInputData actionInput,
                                                     final Writer writer) {
-        if (!users.get(actionInput.getUsername()).isPremium()) {
+        if (!database.getUsers().get(actionInput.getUsername()).isPremium()) {
             return recommendationFailure(actionInput, writer, "PopularRecommendation");
         }
 
         HashMap<Genre, Integer> genresOccurrences = new HashMap<>();
         List<EntityWithSortingCriteria> genresPopularity = new ArrayList<>();
 
-        for (Movie movie : movies.values()) {
+        for (Movie movie : database.getMovies().values()) {
             for (Genre genre : movie.getGenres()) {
                 if (genresOccurrences.containsKey(genre)) {
                     genresOccurrences.put(genre, genresOccurrences.get(genre) + 1);
@@ -1388,7 +1388,7 @@ public class VideosDB {
             }
         }
 
-        for (Serial serial : serials.values()) {
+        for (Serial serial : database.getSerials().values()) {
             for (Genre genre : serial.getGenres()) {
                 if (genresOccurrences.containsKey(genre)) {
                     genresOccurrences.put(genre, genresOccurrences.get(genre) + 1);
@@ -1408,10 +1408,11 @@ public class VideosDB {
         for (EntityWithSortingCriteria sorter : genresPopularity) {
             Genre genre = Utils.stringToGenre(sorter.toString());
 
-            for (String title : videosOrder) {
-                if (movies.containsKey(title)
-                        && movies.get(title).getGenres().contains(genre)
-                        && !movies.get(title).hasBeenViewedByUser(actionInput.getUsername())) {
+            for (String title : database.getVideosOrder()) {
+                if (database.getMovies().containsKey(title)
+                        && database.getMovies().get(title).getGenres().contains(genre)
+                        && !database.getMovies().get(title)
+                                .hasBeenViewedByUser(actionInput.getUsername())) {
                     try {
                         return writer.writeFile(actionInput.getActionId(),
                                 "message",
@@ -1421,9 +1422,10 @@ public class VideosDB {
 
                         return new JSONObject();
                     }
-                } else if (serials.containsKey(title)
-                        && serials.get(title).getGenres().contains(genre)
-                        && !serials.get(title).hasBeenViewedByUser(actionInput.getUsername())) {
+                } else if (database.getSerials().containsKey(title)
+                        && database.getSerials().get(title).getGenres().contains(genre)
+                        && !database.getSerials().get(title)
+                                .hasBeenViewedByUser(actionInput.getUsername())) {
                     try {
                         return writer.writeFile(actionInput.getActionId(),
                                 "message",
@@ -1452,7 +1454,7 @@ public class VideosDB {
 
     private JSONObject executeFavoriteRecommendation(final ActionInputData actionInput,
                                                      final Writer writer) {
-        if (!users.get(actionInput.getUsername()).isPremium()) {
+        if (!database.getUsers().get(actionInput.getUsername()).isPremium()) {
             return recommendationFailure(actionInput, writer, "FavoriteRecommendation");
         }
 
@@ -1461,7 +1463,7 @@ public class VideosDB {
 
         String user = actionInput.getUsername();
 
-        for (User username : users.values()) {
+        for (User username : database.getUsers().values()) {
             for (String title : username.getFavoriteVideos()) {
                 if (favoriteVideosOccurrences.containsKey(title)) {
                     favoriteVideosOccurrences.put(title, favoriteVideosOccurrences.get(title) + 1);
@@ -1471,28 +1473,28 @@ public class VideosDB {
             }
         }
 
-        for (String title : videosOrder) {
+        for (String title : database.getVideosOrder()) {
             if (!favoriteVideosOccurrences.containsKey(title)) {
                 continue;
             }
 
-            if (movies.containsKey(title)) {
-                if (!movies.get(title).hasBeenViewedByUser(user)) {
+            if (database.getMovies().containsKey(title)) {
+                if (!database.getMovies().get(title).hasBeenViewedByUser(user)) {
                     resultList.add(
                             new EntityWithTwoSortingCriterias(
                                     title,
                                     (double) favoriteVideosOccurrences.get(title),
-                                    videosOrder.size() - (double) resultList.size()
+                                    database.getVideosOrder().size() - (double) resultList.size()
                             )
                     );
                 }
-            } else if (serials.containsKey(title)) {
-                if (!serials.get(title).hasBeenViewedByUser(user)) {
+            } else if (database.getSerials().containsKey(title)) {
+                if (!database.getSerials().get(title).hasBeenViewedByUser(user)) {
                     resultList.add(
                             new EntityWithTwoSortingCriterias(
                                     title,
                                     (double) favoriteVideosOccurrences.get(title),
-                                    videosOrder.size() - (double) resultList.size()
+                                    database.getVideosOrder().size() - (double) resultList.size()
                             )
                     );
                 }
@@ -1526,7 +1528,7 @@ public class VideosDB {
 
     private JSONObject executeSearchRecommendation(final ActionInputData actionInput,
                                                    final Writer writer) {
-        if (!users.get(actionInput.getUsername()).isPremium()) {
+        if (!database.getUsers().get(actionInput.getUsername()).isPremium()) {
             return recommendationFailure(actionInput, writer, "SearchRecommendation");
         }
 
@@ -1535,7 +1537,7 @@ public class VideosDB {
         Genre genre = Utils.stringToGenre(actionInput.getGenre());
         String user = actionInput.getUsername();
 
-        for (Movie movie : movies.values()) {
+        for (Movie movie : database.getMovies().values()) {
             if (!movie.hasBeenViewedByUser(user) && movie.getGenres().contains(genre)) {
                 resultList.add(new EntityWithSortingCriteria(
                         movie.getTitle(),
@@ -1544,7 +1546,7 @@ public class VideosDB {
             }
         }
 
-        for (Serial serial : serials.values()) {
+        for (Serial serial : database.getSerials().values()) {
             if (!serial.hasBeenViewedByUser(user) && serial.getGenres().contains(genre)) {
                 resultList.add(new EntityWithSortingCriteria(
                         serial.getTitle(),
