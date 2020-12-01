@@ -1,38 +1,29 @@
-Object Oriented Programming Course
-Homework - VideosDB
+POO - VideosDB
+Pana Mihaela Iuliana, 322CD
 
-November 2020
+In implementare am incercat separarea functionalitatii cat de mult am putut, pentru a avea codul cat mai curat. Astfel,
+clasa VideosDB este entry point-ul rezolvarii problemei date. Clasa Database simuleaza o baza de date ce retine
+filmele, serialele, actorii si utilizatorii, pentru a avea o unica sursa de adevar.
 
-# Info
-https://ocw.cs.pub.ro/courses/poo-ca-cd/teme/tema
+Codul este destul de explicit (in vederea numirii metodelor si variabilelor), iar modul de implementare este deja
+explicat in cerinta, ceea ce duce la o dimensiune mica a readme-ului.
 
-# About the code
+Citirea user-ilor, filmelor, serialelor si actorilor s-a facut prin maparea claselor MovieInputData, SerialInputData,
+ActorInputData si UserInputData la Movie, Serial, Actor, respectiv User. Datele de intrare sunt transmise ca si
+parametrii in constructorii claselor definite de noi. Clasele Serial si Movie mostenesc clasa abstracta Video, in
+vederea realizarii unei solutii cat mai extensibile si modularizate.
 
-We provide the input tests, the logic that parses them and the checker that runs them.
+In mod normal, clasa Database ar putea fi construita ca un singleton insa, pentru a simula un caz real (cand o aplicatie
+se poate conecta la mai multe baze de date ce pastreaza aceeasi structura) am evitat acest pattern.
 
-* test_db - contains the tests in JSON format
-* src
-   * checker - the checker's sources including the checkstyle necessary files, not to be modified
-   * fileio - classes for parsing the input files, not to be modified
-   * common, utils
-        * contain utility classes with constants and static methods
-        * you can add your own functionality in the existing classes or add new classes as well
-   * actor
-        * contains an enum for the types of awards an actor can have - do not modify it
-        * you can add here your actor related classes
-   * entertainment
-        * contains an enum for the supported video genres - do not modify it
-        * class for representing a Season of a tv show - do not modify it
-        * you can add here your entertainment related classes
+Rezolvarea propriu-zisa a actiunilor se desfasoara prin intermediul claselor definite in pachetul "actions", cat si in
+subpachetele "queries" si "recomandations" (din cadrul actions). Pentru a evita instantieri in mod repetat, clasele
+contin doar functii statice.
 
-We encourage you to organize your implementation in packages based on the functionality their classes offer. Try to keep
-your code modular, readable and documented.
+Am preferat separarea filmelor de seriale pentru a putea avea o organizare directa permitand astfel extinderea unui
+singur tip de video (film sau serial). Avand deja o componenta ce se comporta diferit (rating), am considerat ca,
+in cazul in care se doreste extinderea, respectiv separarea lor, aceasta sa fie realizata mai usor.
 
-# Testing
+String-urile ce se repeta le-am amplasat in cadrul clasei de Constante, pentru a evita orice typo ce poate duce la
+bug-uri foarte greu sesizabile.
 
-The Main class runs the checker on your implementation. Add the entry point to your implementation in it.
-
-Run Main to test your implementation from the IDE or from command line.
-
-Run the main method from Test class with the name of the input file from the command line and the result will be written
-to the out.txt file. Thus, you can compare this result with ref.
